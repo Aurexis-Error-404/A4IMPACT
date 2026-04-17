@@ -1,6 +1,9 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { CommodityInsightSummary } from "../lib/canned-data";
+import { StagingGauge } from "./StagingGauge";
+import { ChannelBadge } from "./ChannelBadge";
 
 type Props = {
   insights: CommodityInsightSummary;
@@ -8,17 +11,20 @@ type Props = {
 };
 
 export function RecommendationCard({ insights, loading = false }: Props) {
+  const t = useTranslations("rec");
+  const tc = useTranslations("confidence");
+
   if (loading) {
     return (
       <article className="rec-card rec-card--loading">
-        <span className="rec-label">AI recommendation</span>
+        <span className="rec-label">{t("aiLabel")}</span>
         <div className="rec-thinking">
           <div className="rec-thinking-dots">
             <span />
             <span />
             <span />
           </div>
-          <p className="rec-thinking-text">Analysing with Groq AI…</p>
+          <p className="rec-thinking-text">{t("analysing")}</p>
         </div>
         <div className="rec-skeleton rec-skeleton--headline" />
         <div className="rec-skeleton rec-skeleton--badge" />
@@ -28,12 +34,25 @@ export function RecommendationCard({ insights, loading = false }: Props) {
     );
   }
 
+  const recLabel =
+    t(insights.recommendationLabel as Parameters<typeof t>[0]) ?? insights.recommendationLabel;
+  const confLabel =
+    tc(insights.confidenceLabel as Parameters<typeof tc>[0]) ?? insights.confidenceLabel;
+
   return (
     <article className="rec-card refresh-fade" key={insights.commodity}>
-      <span className="rec-label">AI recommendation</span>
-      <h3 className="rec-headline">{insights.recommendationLabel}</h3>
-      <span className="rec-confidence">{insights.confidenceLabel}</span>
+      <span className="rec-label">{t("aiLabel")}</span>
+      <h3 className="rec-headline">{recLabel}</h3>
+      <span className="rec-confidence">{confLabel}</span>
       <p className="rec-rationale">{insights.recommendationRationale}</p>
+
+      {insights.sellPctNow !== undefined && insights.holdPct !== undefined && (
+        <StagingGauge sellPct={insights.sellPctNow} holdPct={insights.holdPct} />
+      )}
+
+      {insights.recommendedChannel && (
+        <ChannelBadge channel={insights.recommendedChannel} />
+      )}
     </article>
   );
 }

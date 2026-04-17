@@ -25,32 +25,51 @@ Rules:
 """
 
 
-def _prompt(commodity: str, group: str, records: list[dict]) -> str:
+def _prompt(commodity: str, group: str, records: list[dict], enriched: dict) -> str:
     lines = [f"Commodity: {commodity} ({group})", "", "Season data (oldest → latest):"]
     for r in records:
-        kp = r.get("kharif_price")
-        rp = r.get("rabi_price")
+        kp  = r.get("kharif_price")
+        rp  = r.get("rabi_price")
         msp = r.get("msp")
-        ka = r.get("kharif_arrival_tonnes")
-        ra = r.get("rabi_arrival_tonnes")
+        ka  = r.get("kharif_arrival_tonnes")
+        ra  = r.get("rabi_arrival_tonnes")
 
         price_parts = []
-        if kp:
+        if kp is not None:
             flag = " ⚠ BELOW MSP" if msp and kp < msp else ""
             price_parts.append(f"Kharif Rs.{kp:,.2f}{flag}")
-        if rp:
+        if rp is not None:
             flag = " ⚠ BELOW MSP" if msp and rp < msp else ""
             price_parts.append(f"Rabi Rs.{rp:,.2f}{flag}")
 
-        arrival_parts = []
+        arr_parts = []
         if ka:
-            arrival_parts.append(f"Kharif {ka:.1f}T")
+            arr_parts.append(f"Kharif {ka:.1f}T")
         if ra:
-            arrival_parts.append(f"Rabi {ra:.1f}T")
+            arr_parts.append(f"Rabi {ra:.1f}T")
 
         price_str = " | ".join(price_parts) or "No price data"
-        arr_str = " | ".join(arrival_parts) or "N/A"
-        lines.append(f"  {r['season_year']}: MSP Rs.{msp:,} | {price_str} | Arrivals: {arr_str}")
+        arr_str   = " | ".join(arr_parts)   or "N/A"
+        msp_str   = f"Rs.{msp:,}" if msp else "N/A"
+        lines.append(f"  {r['season_year']}: MSP {msp_str} | {price_str} | Arrivals: {arr_str}")
+
+    # Enriched analytics — surface what helps a pessimist spot risk
+    lines.append("\nPre-computed risk analytics:")
+    divergence = enriched.get("msp_price_divergence", "stable")
+    lines.append(f"  MSP-price divergence: {divergence}")
+    collapse = enriched.get("arrival_collapse_pct")
+    if collapse is not None:
+        lines.append(f"  Arrival collapse from peak: {collapse:.1f}%")
+    proximity = enriched.get("floor_proximity_trend", "stable")
+    lines.append(f"  Floor proximity trend: {proximity}")
+    anomalies = enriched.get("anomaly_flags", [])
+    if anomalies:
+        lines.append("  ⚠ Suspect data points (price < 50% MSP):")
+        for flag in anomalies:
+            lines.append(f"    - {flag}")
+    data_conf = enriched.get("data_confidence", "High")
+    lines.append(f"  Data confidence: {data_conf}")
+
     lines.append("\nIdentify the strongest risk signals.")
     return "\n".join(lines)
 
@@ -60,12 +79,14 @@ async def analyze(
     group: str,
     records: list[dict],
     delay: float = 0.0,
+    enriched: dict | None = None,
 ) -> dict:
     if delay:
         await asyncio.sleep(delay)
-    raw = await call_llm(
-        [{"role": "system", "content": _SYSTEM}, {"role": "user", "content": _prompt(commodity, group, records)}]
-    )
+    raw = await call_llm([
+        {"role": "system", "content": _SYSTEM},
+        {"role": "user",   "content": _prompt(commodity, group, records, enriched or {})},
+    ])
     result = extract_last_json(raw)
     result["agent"] = "pessimist"
     return result

@@ -23,9 +23,9 @@ Output format:
 }
 
 Confidence guidance:
-- "High confidence": all 3 agents agree, or 2 agree with confidence ≥ 70
-- "Moderate confidence": mixed verdicts or moderate confidence scores
-- "Low confidence": agents strongly disagree
+- "High confidence": all 3 agents agree, or 2 agree with confidence ≥ 70, AND data_confidence is High
+- "Moderate confidence": mixed verdicts or moderate confidence scores or data_confidence is Moderate
+- "Low confidence": agents strongly disagree OR data_confidence is Low OR suspect anomaly data present
 
 conflict_score guidance:
 - LOW: agents mostly agree
@@ -40,8 +40,9 @@ def _prompt(
     pessimist: dict,
     risk: dict,
     base_insight: dict,
+    enriched: dict,
 ) -> str:
-    return "\n".join([
+    lines = [
         f"Commodity: {commodity}",
         f"Latest season: {base_insight.get('latestSeason')}",
         f"Price vs MSP: {base_insight.get('latestDeltaLabel')}",
@@ -55,8 +56,18 @@ def _prompt(
         f"  Risk      — verdict: {risk.get('verdict')}, risk_level: {risk.get('risk_level')}, "
         f"confidence: {risk.get('confidence')}, reasoning: {risk.get('reasoning', 'N/A')}",
         "",
-        "Synthesize into the final recommendation JSON. Use exact enum strings.",
-    ])
+        "Data quality context:",
+        f"  data_confidence: {enriched.get('data_confidence', 'High')}",
+        f"  MSP-price divergence: {enriched.get('msp_price_divergence', 'stable')}",
+        f"  Floor proximity trend: {enriched.get('floor_proximity_trend', 'stable')}",
+    ]
+    anomalies = enriched.get("anomaly_flags", [])
+    if anomalies:
+        lines.append(f"  ⚠ Suspect data present: {len(anomalies)} anomaly flag(s) — lower confidence accordingly")
+
+    lines.append("")
+    lines.append("Synthesize into the final recommendation JSON. Use exact enum strings.")
+    return "\n".join(lines)
 
 
 async def synthesize(
@@ -65,11 +76,12 @@ async def synthesize(
     pessimist: dict,
     risk: dict,
     base_insight: dict,
+    enriched: dict | None = None,
 ) -> dict:
-    raw = await call_llm(
-        [
-            {"role": "system", "content": _SYSTEM},
-            {"role": "user", "content": _prompt(commodity, optimist, pessimist, risk, base_insight)},
-        ]
-    )
+    raw = await call_llm([
+        {"role": "system", "content": _SYSTEM},
+        {"role": "user",   "content": _prompt(
+            commodity, optimist, pessimist, risk, base_insight, enriched or {}
+        )},
+    ])
     return extract_last_json(raw)

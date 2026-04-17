@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { CommodityInsightSummary, formatCurrency } from "../lib/canned-data";
 import { TrendArrowBadge } from "./TrendArrowBadge";
 
@@ -10,13 +11,16 @@ type Props = {
 };
 
 export function HeroCanvas({ insights, group, lastUpdated }: Props) {
+  const t = useTranslations("hero");
+  const tr = useTranslations("risk");
+
   if (!insights) {
     return (
       <section className="hero-canvas">
         <div className="hero-content">
           <div>
-            <span className="hero-eyebrow">Seasonal commodity intelligence</span>
-            <h1 className="hero-headline">Select a commodity to begin.</h1>
+            <span className="hero-eyebrow">{t("intelligenceLabel")}</span>
+            <h1 className="hero-headline">{t("selectPrompt")}</h1>
           </div>
         </div>
       </section>
@@ -34,16 +38,13 @@ export function HeroCanvas({ insights, group, lastUpdated }: Props) {
     <section className="hero-canvas">
       <div className="hero-content">
         <div>
-          <span className="hero-eyebrow">Seasonal - {group}</span>
+          <span className="hero-eyebrow">{t("seasonal")} - {group}</span>
           <h1 className="hero-headline">{insights.commodity}</h1>
-          <p className="hero-sub">
-            A heuristic read of price, MSP, and seasonal coverage across the
-            reporting window. Values stay qualitative where the signal is thin.
-          </p>
+          <p className="hero-sub">{t("tagline")}</p>
           <div className="hero-status">
             <span className={`chip ${riskChip}`}>
               <span className="dot" />
-              Risk - {insights.riskLevel}
+              {t("riskPrefix")} - {tr(insights.riskLevel as Parameters<typeof tr>[0])}
             </span>
             <span className="chip teal">
               <span className="dot" />
@@ -51,7 +52,7 @@ export function HeroCanvas({ insights, group, lastUpdated }: Props) {
             </span>
             <span className="chip">
               <span className="dot" />
-              Latest season {insights.latestSeason}
+              {t("latestSeason")} {insights.latestSeason}
             </span>
           </div>
         </div>
@@ -62,22 +63,22 @@ export function HeroCanvas({ insights, group, lastUpdated }: Props) {
           />
           <span className="chip">
             <span className="dot" />
-            Refreshed {lastUpdated}
+            {t("refreshed")} {lastUpdated}
           </span>
         </div>
       </div>
       <aside className="hero-aside">
-        <span className="big-label">Reference price - {insights.latestSeason}</span>
+        <span className="big-label">{t("refPrice")} - {insights.latestSeason}</span>
         <span className="big-number mono">
           {formatCurrency(insights.latestReferencePrice)}
         </span>
         <div className="split">
           <div className="stat">
-            <span className="big-label">MSP floor</span>
+            <span className="big-label">{tr("mspFloor")}</span>
             <span className="val mono">{formatCurrency(insights.latestMsp)}</span>
           </div>
           <div className="stat">
-            <span className="big-label">vs MSP</span>
+            <span className="big-label">{t("vsMsp")}</span>
             <span className="val mono">
               {insights.latestDeltaPct > 0 ? "+" : insights.latestDeltaPct < 0 ? "−" : ""}
               {(Math.abs(insights.latestDeltaPct) * 100).toFixed(1)}%

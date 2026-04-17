@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { AlertItem } from "../lib/canned-data";
 
 type Props = {
@@ -7,13 +8,13 @@ type Props = {
 };
 
 export function AlertSeverityStack({ alerts }: Props) {
+  const t = useTranslations("alerts");
+
   if (alerts.length === 0) {
     return (
       <div className="alert green">
-        <div className="headline">No active alerts</div>
-        <div className="detail">
-          All tracked commodities sit above or near MSP in the current window.
-        </div>
+        <div className="headline">{t("noAlerts")}</div>
+        <div className="detail">{t("noAlertsDetail")}</div>
       </div>
     );
   }

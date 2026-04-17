@@ -37,6 +37,12 @@ export type CommodityInsightSummary = {
   recommendationLabel: RecommendationLabel;
   confidenceLabel: string;
   recommendationRationale: string;
+  // Extended intelligence fields — optional; populated by /api/recommendation
+  deltaPctHistory?: number[];
+  expectedPriceRange?: { floor: number; ceiling: number; basis: string };
+  recommendedChannel?: string;
+  sellPctNow?: number;
+  holdPct?: number;
 };
 
 export type AlertItem = {

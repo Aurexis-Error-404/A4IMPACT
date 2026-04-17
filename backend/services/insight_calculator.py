@@ -5,6 +5,7 @@ from data.models import (
     RiskLevel,
     TrendDirection,
     RecommendationLabel,
+    PriceRange,
 )
 
 
@@ -76,6 +77,46 @@ def get_lowest_season(records: list[dict]) -> tuple[str, float | None]:
         return "", None
     worst = min(priced, key=lambda r: _ref_price(r))  # type: ignore[arg-type]
     return worst["season_year"], _ref_price(worst)
+
+
+def get_delta_pct_history(records: list[dict]) -> list[float]:
+    result = []
+    for r in records:
+        price = _ref_price(r)
+        msp = r.get("msp")
+        if price is not None and msp and msp > 0:
+            result.append(round((price - msp) / msp, 4))
+        else:
+            result.append(0.0)
+    return result
+
+
+def get_expected_price_range(records: list[dict]) -> PriceRange | None:
+    priced = _priced(records)
+    if not priced:
+        return None
+    prices = [_ref_price(r) for r in priced]  # all non-None by construction
+    msps = [r.get("msp") for r in priced if r.get("msp")]
+    raw_floor = min(prices)  # type: ignore[type-var]
+    ceiling = max(prices)    # type: ignore[type-var]
+    # Effective floor = observed minimum but never below the lowest MSP
+    msp_floor = min(msps) if msps else None
+    effective_floor = max(raw_floor, msp_floor) if msp_floor else raw_floor
+    return PriceRange(
+        floor=round(effective_floor, 2),
+        ceiling=round(ceiling, 2),
+        basis=f"{len(priced)}-season observed range",
+    )
+
+
+def get_recommended_channel(delta_pct: float, availability: SeasonAvailability) -> str:
+    if availability == "Sparse":
+        return "Contact local APMC for current rates"
+    if delta_pct < -0.05:
+        return "Government Procurement (FCI/NAFED) — price below MSP, MSP protection applies"
+    if delta_pct > 0.10:
+        return "Open Market (APMC) — price well above MSP, competitive rates favourable"
+    return "Either (APMC or FCI) — price near MSP, compare local rates before selling"
 
 
 def get_risk_level(delta_pct: float, availability: SeasonAvailability) -> RiskLevel:
@@ -164,6 +205,14 @@ def compute_insights(group: str, commodity: str, records: list[dict]) -> dict:
         f"Rs.{highest_price:,.0f} in {highest_season}" if highest_price else ""
     )
 
+    # Sparse data → always Low confidence regardless of other signals
+    priced_count = len([r for r in records if _ref_price(r) is not None])
+    confidence: str = "Low confidence" if priced_count < 3 else "Moderate confidence"
+
+    delta_pct_history = get_delta_pct_history(records)
+    expected_price_range = get_expected_price_range(records)
+    recommended_channel = get_recommended_channel(delta_pct, availability)
+
     return {
         "commodity": commodity,
         "group": group,
@@ -182,6 +231,9 @@ def compute_insights(group: str, commodity: str, records: list[dict]) -> dict:
         "rabiShare": rabi_share,
         "riskLevel": risk,
         "recommendationLabel": rec_label,
-        "confidenceLabel": "Moderate confidence",
+        "confidenceLabel": confidence,
         "recommendationRationale": rationale,
+        "deltaPctHistory": delta_pct_history,
+        "expectedPriceRange": expected_price_range,
+        "recommendedChannel": recommended_channel,
     }

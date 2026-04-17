@@ -12,6 +12,8 @@ import { RiskPanel } from "../../components/RiskPanel";
 import { SeasonArrivalChart } from "../../components/SeasonArrivalChart";
 import { SeasonPriceChart } from "../../components/SeasonPriceChart";
 import { TopNav } from "../../components/TopNav";
+import { PriceRangeBand } from "../../components/PriceRangeBand";
+import { DeltaHistorySparkline } from "../../components/DeltaHistorySparkline";
 import { TrendArrowBadge } from "../../components/TrendArrowBadge";
 import {
   fetchAllCommodityPairs,
@@ -166,6 +168,9 @@ export default function DashboardPage() {
                 <div className="metric-card">
                   <span className="metric-label">Trend</span>
                   <strong>{insights.priceTrend}</strong>
+                  {(aiRec ?? insights).deltaPctHistory && (
+                    <DeltaHistorySparkline history={(aiRec ?? insights).deltaPctHistory!} />
+                  )}
                 </div>
                 <div className="metric-card">
                   <span className="metric-label">Coverage</span>
@@ -185,6 +190,17 @@ export default function DashboardPage() {
             <div className="side-stack">
               <RecommendationCard insights={aiRec ?? insights} loading={recLoading} />
               <RiskPanel insights={insights} />
+              {(aiRec ?? insights).expectedPriceRange && (() => {
+                const r = (aiRec ?? insights).expectedPriceRange!;
+                return (
+                  <PriceRangeBand
+                    floor={r.floor}
+                    ceiling={r.ceiling}
+                    current={insights.latestReferencePrice}
+                    basis={r.basis}
+                  />
+                );
+              })()}
             </div>
           </section>
         </>

@@ -14,6 +14,7 @@ import { SeasonPriceChart } from "../../components/SeasonPriceChart";
 import { TopNav } from "../../components/TopNav";
 import { TrendArrowBadge } from "../../components/TrendArrowBadge";
 import {
+  fetchAllCommodityPairs,
   fetchCommodityInsights,
   fetchCommoditySeries,
   fetchDashboardSummary,
@@ -28,71 +29,51 @@ import type {
 } from "../../lib/canned-data";
 
 type DashState = {
-  groups: string[];
-  allInsights: CommodityInsightSummary[];
   movers: CommodityCardSummary[];
   alerts: AlertItem[];
   pulseEvents: PulseEvent[];
 };
 
+type Pair = { group: string; commodity: string; slug: string };
+
 export default function DashboardPage() {
   const [dash, setDash] = useState<DashState | null>(null);
+  const [allPairs, setAllPairs] = useState<Pair[]>([]);
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedCommodity, setSelectedCommodity] = useState("");
   const [insights, setInsights] = useState<CommodityInsightSummary | null>(null);
   const [records, setRecords] = useState<SeasonPriceRecord[]>([]);
   const [insightsLoading, setInsightsLoading] = useState(false);
 
-  // Initial load — fetch all data from backend
   useEffect(() => {
-    fetchDashboardSummary().then((summary) => {
-      const allInsights: CommodityInsightSummary[] = [];
-      const groups: string[] = [];
-      for (const card of summary.movers) {
-        if (!groups.includes(card.group)) groups.push(card.group);
-      }
-      setDash({
-        groups: Array.from(new Set([...summary.movers.map((c) => c.group)])),
-        allInsights,
-        movers: summary.movers,
-        alerts: summary.alerts,
-        pulseEvents: summary.pulseEvents,
-      });
-      if (summary.spotlight) {
-        setSelectedGroup(summary.spotlight.group);
-        setSelectedCommodity(summary.spotlight.commodity);
-      }
-    });
+    Promise.all([fetchDashboardSummary(), fetchAllCommodityPairs()]).then(
+      ([summary, pairs]) => {
+        setAllPairs(pairs);
+        setDash({
+          movers: summary.movers,
+          alerts: summary.alerts,
+          pulseEvents: summary.pulseEvents,
+        });
+        if (summary.spotlight) {
+          setSelectedGroup(summary.spotlight.group);
+          setSelectedCommodity(summary.spotlight.commodity);
+        } else if (pairs.length) {
+          setSelectedGroup(pairs[0].group);
+          setSelectedCommodity(pairs[0].commodity);
+        }
+      },
+    );
   }, []);
 
-  // Fetch all insights once groups are known, to power the filter bar commodity list
-  const [allInsightsList, setAllInsightsList] = useState<CommodityInsightSummary[]>([]);
-  useEffect(() => {
-    if (!dash) return;
-    // We already get movers but need all 14 for filter bar — reuse fetchDashboardSummary data
-    // which includes movers; we derive groups/commodities from backend via summary.movers
-  }, [dash]);
+  const groups = useMemo(
+    () => [...new Set(allPairs.map((p) => p.group))],
+    [allPairs],
+  );
 
-  // Commodity list for selected group (derived from movers + extra backend calls)
-  const commoditiesInGroup = useMemo(() => {
-    if (!dash) return [];
-    return dash.movers
-      .filter((c) => c.group === selectedGroup)
-      .map((c) => c.commodity);
-  }, [dash, selectedGroup]);
-
-  const groups = useMemo(() => {
-    if (!dash) return [];
-    return Array.from(new Set(dash.movers.map((c) => c.group)));
-  }, [dash]);
-
-  // Repair selected commodity when group changes
-  useEffect(() => {
-    if (!commoditiesInGroup.length) return;
-    if (!commoditiesInGroup.includes(selectedCommodity)) {
-      setSelectedCommodity(commoditiesInGroup[0]);
-    }
-  }, [selectedGroup, commoditiesInGroup, selectedCommodity]);
+  const commoditiesInGroup = useMemo(
+    () => allPairs.filter((p) => p.group === selectedGroup).map((p) => p.commodity),
+    [allPairs, selectedGroup],
+  );
 
   // Fetch insights + records when selected commodity changes
   useEffect(() => {
@@ -128,8 +109,10 @@ export default function DashboardPage() {
       <CommodityFilterBar
         groups={groups}
         selectedGroup={selectedGroup}
-        onGroupChange={(g) => {
-          setSelectedGroup(g);
+        onGroupChange={(newGroup) => {
+          const first = allPairs.find((p) => p.group === newGroup)?.commodity ?? "";
+          setSelectedGroup(newGroup);
+          setSelectedCommodity(first);
         }}
         commodities={commoditiesInGroup}
         selectedCommodity={selectedCommodity}

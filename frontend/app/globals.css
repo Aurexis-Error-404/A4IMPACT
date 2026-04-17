@@ -1214,13 +1214,13 @@ table {
   align-items: center;
   justify-content: center;
   gap: 18px;
-  min-height: 320px;
+  padding: 48px 0;
   color: var(--muted);
   font-family: var(--font-mono), monospace;
   font-size: 0.82rem;
   letter-spacing: 0.06em;
 }
-.dash-loading.inline { min-height: 160px; }
+.dash-loading.inline { padding: 32px 0; }
 .dash-loading-spinner {
   width: 36px;
   height: 36px;

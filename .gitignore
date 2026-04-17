@@ -55,5 +55,8 @@ coverage/
 # Local design/reference folders
 pics/
 
+# Nested duplicate repo (local only, not part of the project)
+A4IMPACT/
+
 # TypeScript incremental build files
 *.tsbuildinfo

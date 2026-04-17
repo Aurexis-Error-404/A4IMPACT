@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from groq import RateLimitError
 
 from config import Settings
 from data.loader import load
@@ -26,6 +27,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(RateLimitError)
+async def rate_limit_handler(_request: Request, _exc: RateLimitError):
+    return JSONResponse(
+        status_code=503,
+        content={"error": "llm_rate_limited", "detail": "Groq rate limit reached — retry after 60s"},
+    )
 
 
 @app.exception_handler(FileNotFoundError)

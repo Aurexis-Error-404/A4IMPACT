@@ -20,6 +20,16 @@ class SeasonRecord(BaseModel):
     source_file: str = ""
 
 
+class AlertItem(BaseModel):
+    id: str
+    severity: Literal["red", "amber", "green"]
+    commodity: str
+    group: str
+    headline: str
+    detail: str
+    season: str
+
+
 class CommodityInsightSummary(BaseModel):
     commodity: str
     group: str

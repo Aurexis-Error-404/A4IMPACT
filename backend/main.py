@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from config import Settings
 from data.loader import load
-from routers import health, commodities, series, insights, recommendation, ws
+from routers import health, commodities, series, insights, recommendation, ws, alerts, demo
 
 settings = Settings()
 
@@ -49,3 +49,5 @@ app.include_router(series.router)
 app.include_router(insights.router)
 app.include_router(recommendation.router)
 app.include_router(ws.router)
+app.include_router(alerts.router)
+app.include_router(demo.router)

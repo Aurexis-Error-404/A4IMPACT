@@ -103,7 +103,7 @@ export function SeasonPriceChart({ records }: Props) {
             );
           })}
           {series.map((item) => {
-            const points = pointSeries(records, item.key, {
+            const points = pointSeries(records, item.key as Parameters<typeof pointSeries>[1], {
               width,
               height,
               padding,

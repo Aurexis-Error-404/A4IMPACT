@@ -23,9 +23,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="KrishiCFO Backend", lifespan=lifespan)
 
+_dev_origins = r"http://localhost:\d+"
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"http://localhost:\d+",
+    allow_origins=[settings.allowed_origin],
+    allow_origin_regex=_dev_origins if settings.allowed_origin == "http://localhost:3000" else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

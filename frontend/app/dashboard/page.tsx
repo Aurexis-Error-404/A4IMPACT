@@ -61,10 +61,11 @@ export default function DashboardPage() {
   const [debateOpen, setDebateOpen] = useState(false);
   const [liveAlerts, setLiveAlerts] = useState<DebateAlertEvent[]>([]);
   const [comparisonInsights, setComparisonInsights] = useState<Record<string, CommodityInsightSummary>>({});
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    Promise.all([fetchDashboardSummary(), fetchAllCommodityPairs(), fetchCommodityCards()]).then(
-      ([summary, pairs, cards]) => {
+    Promise.all([fetchDashboardSummary(), fetchAllCommodityPairs(), fetchCommodityCards()])
+      .then(([summary, pairs, cards]) => {
         setAllPairs(pairs);
         setAllCards(cards);
         setDash({
@@ -79,8 +80,11 @@ export default function DashboardPage() {
           setSelectedGroup(pairs[0].group);
           setSelectedCommodity(pairs[0].commodity);
         }
-      },
-    );
+      })
+      .catch((err) => {
+        console.error("Dashboard load failed:", err);
+        setLoadError(true);
+      });
   }, []);
 
   const handleRequestComparisonInsights = useCallback((slug: string) => {
@@ -134,6 +138,17 @@ export default function DashboardPage() {
       });
     return () => { cancelled = true; };
   }, [selectedGroup, selectedCommodity]);
+
+  if (loadError) {
+    return (
+      <main className="page-shell dashboard-page">
+        <TopNav />
+        <div className="dash-loading">
+          <p>{t("loadError")}</p>
+        </div>
+      </main>
+    );
+  }
 
   if (!dash) {
     return (

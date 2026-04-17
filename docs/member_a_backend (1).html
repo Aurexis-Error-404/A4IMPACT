@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KrishiCFO · Member A · Backend · 24h Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300;1,9..144,600&family=Lora:ital,wght@0,400;0,500;1,400&family=Martian+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0e0b;--panel:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--border-s:rgba(255,255,255,0.14);--ink:#f0ece2;--muted:#9aa293;--gold:#ef9f27;--gold-d:rgba(239,159,39,0.14);--olive:#639922;--olive-d:rgba(99,153,34,0.14);--teal:#1d9e75;--teal-d:rgba(29,158,117,0.14);--red:#e24b4a;--red-d:rgba(226,75,74,0.1);--violet:#7f77dd;--violet-d:rgba(127,119,221,0.12)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Lora',Georgia,serif;font-size:15px;line-height:1.7;max-width:880px;margin:0 auto;padding:64px 44px 100px}
+.badge{font-family:'Martian Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:28px}
+.hero-title{font-family:'Fraunces',serif;font-size:60px;font-weight:600;line-height:1.0;margin-bottom:8px}
+.hero-title em{font-style:italic;color:var(--gold);font-weight:300}
+.hero-sub{font-size:16px;color:var(--muted);max-width:560px;margin-bottom:40px;line-height:1.65;font-style:italic}
+hr.div{border:none;border-top:1px solid var(--border);margin:36px 0}
+.meta-row{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:48px}
+.meta-item{padding:18px 22px;border-right:1px solid var(--border)}
+.meta-item:last-child{border-right:none}
+.meta-item label{font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+.meta-item span{font-family:'Martian Mono',monospace;font-size:12.5px;font-weight:500;color:var(--ink)}
+.sk{font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:14px}
+.kb{border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:28px}
+.kb-head{padding:26px 30px 20px;border-bottom:1px solid var(--border);background:var(--panel)}
+.kb-title{font-family:'Fraunces',serif;font-size:34px;font-weight:600;line-height:1.1;margin-bottom:10px}
+.kb-title em{font-style:italic;color:var(--gold);font-weight:300}
+.kb-desc{color:var(--muted);font-size:14px;line-height:1.65;max-width:580px}
+.proto-list{padding:0 30px 26px}
+.proto-item{border:1px solid var(--border);border-radius:12px;padding:17px 20px;margin-top:12px;background:var(--panel)}
+.proto-label{font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);display:block;margin-bottom:8px}
+.proto-item p{font-size:13.5px;color:var(--muted);line-height:1.65}
+.proto-item p code,.task-body p code,.warn-block p code{font-family:'Martian Mono',monospace;font-size:11.5px;color:#c8dbb0;background:rgba(200,219,176,.1);padding:1px 5px;border-radius:4px}
+.code-lbl{font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:16px 30px 4px}
+.code-box{background:#060808;border:1px solid var(--border);border-radius:10px;margin:0 30px 0;padding:16px 20px;overflow-x:auto}
+.code-box code{font-family:'Martian Mono',monospace;font-size:11.5px;color:#c8dbb0;white-space:pre;line-height:1.65;display:block}
+.pipe-table{width:100%;border-collapse:collapse;margin:0 0 4px}
+.pipe-table tr{border-bottom:1px solid var(--border)}
+.pipe-table tr:last-child{border-bottom:none}
+.pipe-table td{padding:14px 16px;font-size:13.5px;vertical-align:middle}
+.sn{font-family:'Martian Mono',monospace;font-size:11px;color:var(--gold);width:32px;font-weight:500}
+.sname{font-family:'Lora',serif;font-weight:500;width:200px}
+.sdetail{color:var(--muted);font-size:12.5px}
+.stime{font-family:'Martian Mono',monospace;font-size:11px;color:var(--teal);text-align:right;width:68px}
+.hour-block{border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:20px}
+.hour-head{display:flex;align-items:baseline;gap:16px;padding:22px 28px 18px;border-bottom:1px solid var(--border);background:var(--panel)}
+.hour-num{font-family:'Martian Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--muted);min-width:72px;flex-shrink:0}
+.hour-title{font-family:'Fraunces',serif;font-size:24px;font-weight:600;line-height:1.1}
+.hour-sub{font-size:13px;color:var(--muted);font-style:italic;margin-top:2px}
+.hour-body{padding:24px 28px}
+.task{margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--border)}
+.task:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.task-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:8px}
+.tdot{width:8px;height:8px;border-radius:50%;background:var(--gold);margin-top:7px;flex-shrink:0}
+.ttitle{font-family:'Lora',serif;font-weight:500;font-size:15.5px;color:var(--ink);line-height:1.4}
+.task-body{padding-left:20px}
+.task-body p{font-size:13.5px;color:var(--muted);line-height:1.65;margin-bottom:8px}
+.task-body p:last-child{margin-bottom:0}
+.file-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ft{font-family:'Martian Mono',monospace;font-size:10px;padding:4px 10px;border-radius:6px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--muted)}
+.ft.new{border-color:rgba(239,159,39,.3);color:var(--gold);background:var(--gold-d)}
+.ft.changed{border-color:rgba(29,158,117,.3);color:var(--teal);background:var(--teal-d)}
+.dep{font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.08em;padding:5px 10px;border-radius:6px;border:1px solid rgba(239,159,39,.25);background:var(--gold-d);color:var(--gold);margin-top:10px;display:block;width:fit-content}
+.gate-block{border:1px solid rgba(239,159,39,.3);border-radius:14px;padding:20px 24px;background:var(--gold-d);margin-bottom:20px}
+.gate-lbl{font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:10px}
+.gate-title{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:14px}
+.gate-checks{list-style:none}
+.gate-checks li{font-family:'Martian Mono',monospace;font-size:11.5px;color:var(--ink);padding:5px 0 5px 18px;position:relative}
+.gate-checks li::before{content:"→";position:absolute;left:0;color:var(--gold)}
+.gate-checks li code{font-family:'Martian Mono',monospace;font-size:11px;color:#c8dbb0;background:rgba(200,219,176,.1);padding:1px 4px;border-radius:3px}
+.milestone{border:1px solid rgba(99,153,34,.3);border-radius:12px;padding:16px 20px;background:var(--olive-d);margin-top:16px}
+.ms-lbl{font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--olive);display:block;margin-bottom:6px}
+.milestone p{font-family:'Martian Mono',monospace;font-size:11.5px;color:var(--ink);line-height:1.6}
+.warn-block{border:1px solid rgba(226,75,74,.25);border-radius:12px;padding:16px 20px;background:var(--red-d);margin:12px 0}
+.warn-lbl{font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);display:block;margin-bottom:8px}
+.warn-block p{font-size:13px;color:var(--ink);line-height:1.6}
+.api-table{width:100%;border-collapse:collapse;margin-top:4px}
+.api-table th{font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 14px;border-bottom:1px solid var(--border-s)}
+.api-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top}
+.api-table td:first-child{width:56px}
+.api-table td:nth-child(2){font-family:'Martian Mono',monospace;font-size:11px;color:#c8dbb0;width:260px}
+.api-table td:nth-child(3){color:var(--muted);font-size:12.5px}
+.api-table tr:last-child td{border-bottom:none}
+.mb{font-family:'Martian Mono',monospace;font-size:9.5px;padding:2px 7px;border-radius:4px;font-weight:500}
+.get{background:rgba(29,158,117,.15);color:var(--teal)}
+.post{background:rgba(239,159,39,.15);color:var(--gold)}
+.ws{background:rgba(127,119,221,.15);color:var(--violet)}
+.doc-footer{margin-top:60px;padding-top:24px;border-top:1px solid var(--border);font-family:'Martian Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<p class="badge">KrishiCFO · Member A · Backend Engineer</p>
+<h1 class="hero-title">FastAPI, Agents <em>&amp; the Spine.</em></h1>
+<p class="hero-sub">Make the backend exist, make the agents think, make the WebSocket stream. Everything the frontend shows comes through you. Read the pivot section before touching a file — the data model changed.</p>
+
+<div class="meta-row">
+  <div class="meta-item"><label>Clock</label><span>24 Hours</span></div>
+  <div class="meta-item"><label>Stack</label><span>Python FastAPI</span></div>
+  <div class="meta-item"><label>Runtime</label><span>localhost:8000</span></div>
+  <div class="meta-item"><label>Voice Stack</label><span>WhisperFlow + ElevenLabs</span></div>
+</div>
+
+<hr class="div">
+
+<!-- PIVOT BLOCK -->
+<div class="kb">
+  <div class="kb-head">
+    <span class="sk">Critical Knowledge · Product Pivot</span>
+    <h2 class="kb-title">The data changed. <em>The architecture follows.</em></h2>
+    <p class="kb-desc">The original PDFs described daily mandi forecasting with Prophet and Agmarknet CSVs. The actual checked-in data is season-wise commodity reports. Build around reality, not the plan.</p>
+  </div>
+  <div class="proto-list">
+    <div class="proto-item">
+      <span class="proto-label">What the data actually is</span>
+      <p>Four season-wise CSVs (2022-23 through 2025-26), already normalized to <code>season_report_summary.json</code> by Member B. Fields: <code>commodity_group</code>, <code>commodity</code>, <code>msp</code>, <code>kharif_price</code>, <code>kharif_arrival_tonnes</code>, <code>rabi_price</code>, <code>rabi_arrival_tonnes</code>. 14 commodities across Cereals, Pulses, Oil Seeds, Fibre Crops. No mandi. No daily dates. No Agmarknet.</p>
+    </div>
+    <div class="proto-item">
+      <span class="proto-label">What this means for backend scope</span>
+      <p>No Prophet. No Supabase. No transport-cost calculator. No Agmarknet ingest. Instead: load the JSON on startup into an in-memory dict, serve season insights via REST, power the AI <code>RecommendationCard</code> via 3 parallel agents, stream the agent debate via WebSocket, and run the voice pipeline. The frontend already has <code>RecommendationCard.tsx</code> rendering <code>recommendationLabel</code> and <code>recommendationRationale</code> — your job is to make it real.</p>
+    </div>
+    <div class="proto-item">
+      <span class="proto-label">Updated voice stack (replacing Bhashini / Groq Whisper / AI4Bharat)</span>
+      <p><strong>WhisperFlow STT</strong> → <strong>3 parallel Llama 8B agents</strong> → <strong>ElevenLabs TTS (Multilingual v2)</strong>. No 24h registration wait. No government API. ElevenLabs free tier is 10,000 chars/month — enough for demo. The 3-agent parallel path mirrors the dashboard debate, making voice feel like a first-class citizen of the same architecture, not a separate advisory shortcut.</p>
+    </div>
+    <div class="proto-item">
+      <span class="proto-label">Frontend state you are integrating against</span>
+      <p>19 components built and running. Routes: <code>/</code>, <code>/dashboard</code>, <code>/commodity/[slug]</code>. All data currently from <code>lib/canned-data.ts</code> — no API calls. Your integration target is <code>lib/api.ts</code> which currently only calls canned functions. TypeScript strict mode is on: every field you return must match the exact shape of <code>CommodityInsightSummary</code> or Member B gets type errors.</p>
+    </div>
+  </div>
+</div>
+
+<!-- VOICE PIPELINE BLOCK -->
+<div class="kb">
+  <div class="kb-head">
+    <span class="sk">Critical Knowledge · Updated Voice Pipeline</span>
+    <h2 class="kb-title">Five stages. <em>Under 7 seconds total.</em></h2>
+    <p class="kb-desc">Voice path is decoupled from the dashboard debate but architecturally mirrors it. Three parallel Llama 8B calls replace the single advisory.py. WhisperFlow handles STT. ElevenLabs handles TTS.</p>
+  </div>
+  <div style="padding:0 30px 28px">
+    <table class="pipe-table">
+      <tr><td class="sn">01</td><td class="sname">Browser MediaRecorder</td><td class="sdetail">Captures Telugu audio · WAV blob · POST to <code>/voice/query</code> as multipart/form-data</td><td class="stime">—</td></tr>
+      <tr><td class="sn">02</td><td class="sname">WhisperFlow STT</td><td class="sdetail">OpenAI Whisper API · <code>language="te"</code> · returns <code>text_te</code> + Llama-translated <code>text_en</code></td><td class="stime">~0.8s</td></tr>
+      <tr><td class="sn">03</td><td class="sname">3× Llama 8B Parallel</td><td class="sdetail">Season-Optimist + Season-Pessimist + Risk Analyst via <code>asyncio.gather()</code>. Each receives 4-season commodity data.</td><td class="stime">~1.4s</td></tr>
+      <tr><td class="sn">04</td><td class="sname">Llama 8B Synthesizer</td><td class="sdetail">Single synthesis call: merges 3 verdicts into one Telugu-friendly 2-3 sentence advisory paragraph</td><td class="stime">~0.7s</td></tr>
+      <tr><td class="sn">05</td><td class="sname">ElevenLabs Multilingual v2</td><td class="sdetail">Telugu text → audio bytes → base64. 5s timeout → <code>audio_base64: null</code>, frontend falls to text-only</td><td class="stime">~0.9s</td></tr>
+      <tr><td class="sn" style="border:none">Σ</td><td class="sname" style="border:none">Total</td><td class="sdetail" style="border:none;color:var(--ink)">Text &lt;3s · with audio &lt;7s · text renders first, audio plays when ready</td><td class="stime" style="border:none;color:var(--gold)">~3.8s</td></tr>
+    </table>
+  </div>
+
+  <div class="code-lbl">PATTERN — PARALLEL VOICE AGENTS</div>
+  <div class="code-box">
+    <code>async def run_voice_advisory(commodity: str, season_data: list) -> str:
+    optimist_t, pessimist_t, risk_t = await asyncio.gather(
+        call_season_optimist(commodity, season_data),
+        call_season_pessimist(commodity, season_data),
+        call_risk_analyst(commodity, season_data),
+    )
+    return await synthesize_voice_advisory(optimist_t, pessimist_t, risk_t)</code>
+  </div>
+
+  <div class="code-lbl">ELEVENLABS TTS — ASYNC PYTHON</div>
+  <div class="code-box" style="margin-bottom:0">
+    <code>async def elevenlabs_tts(text: str) -> str | None:
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        r = await client.post(
+            f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}",
+            headers={"xi-api-key": ELEVENLABS_API_KEY},
+            json={"text": text, "model_id": "eleven_multilingual_v2"},
+        )
+        if r.status_code != 200:
+            return None          # triggers text-only fallback
+        return base64.b64encode(r.content).decode()</code>
+  </div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- HOUR 0-1 -->
+<div class="hour-block">
+  <div class="hour-head">
+    <span class="hour-num">HOUR 0–1</span>
+    <div><div class="hour-title">Setup Sprint</div><div class="hour-sub">Boilerplate only. Get the skeleton breathing.</div></div>
+  </div>
+  <div class="hour-body">
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Init FastAPI project + install deps</div></div>
+      <div class="task-body">
+        <p>Create <code>backend/</code> with <code>main.py</code>, <code>config.py</code>, <code>requirements.txt</code>. Install: <code>fastapi uvicorn[standard] httpx python-dotenv openai elevenlabs</code>. <code>GET /health</code> returns <code>{"status":"ok","data_mode":"season_wise","commodities":14}</code> immediately. CORS middleware goes in <code>main.py</code> before all routes: <code>allow_origins=["http://localhost:3000"]</code>.</p>
+        <div class="file-tags"><span class="ft new">main.py</span><span class="ft new">config.py</span><span class="ft new">requirements.txt</span></div>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Load season_report_summary.json into memory</div></div>
+      <div class="task-body">
+        <p>Copy <code>crop_data/season_report_summary.json</code> to <code>backend/data/</code>. Write <code>data/loader.py</code> that parses on startup: two dicts — <code>BY_COMMODITY[name] → list[SeasonRecord]</code> and <code>BY_SLUG[slug] → list[SeasonRecord]</code>. This replaces Supabase entirely. Zero DB setup required.</p>
+        <div class="file-tags"><span class="ft new">data/loader.py</span><span class="ft new">data/season_report_summary.json</span></div>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Write agents/llm.py — Groq wrapper</div></div>
+      <div class="task-body">
+        <p>Single async function <code>call_groq(model, messages, max_tokens)</code> wrapping httpx POST to Groq's OpenAI-compatible endpoint. Exponential backoff on 429: 2s → 4s → 8s, max 3 retries. Add <code>extract_last_json(text)</code> helper — parses last valid JSON block from LLM output. Every agent depends on this.</p>
+        <div class="file-tags"><span class="ft new">agents/llm.py</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GATE 1 -->
+<div class="gate-block">
+  <span class="gate-lbl">Gate 1 · Hour 2 Smoke Test</span>
+  <div class="gate-title">Three checks. All must pass before proceeding.</div>
+  <ul class="gate-checks">
+    <li><code>uvicorn main:app --reload</code> starts clean · <code>/health</code> returns 200</li>
+    <li><code>GET /api/commodities</code> returns all 14 commodities with groups</li>
+    <li><code>GET /api/season-data/Cotton</code> returns 4 season records from loaded JSON</li>
+  </ul>
+</div>
+
+<!-- HOUR 2-6 -->
+<div class="hour-block">
+  <div class="hour-head">
+    <span class="hour-num">HOUR 2–6</span>
+    <div><div class="hour-title">Core Agent Pipeline</div><div class="hour-sub">Three agents. Season data in. Structured JSON verdicts out.</div></div>
+  </div>
+  <div class="hour-body">
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Build the 3 analyst agents around season data</div></div>
+      <div class="task-body">
+        <p><strong>agents/season_optimist.py</strong>: Looks for price-above-MSP seasons, Kharif/Rabi uptrend signals, strongest price year. System prompt includes all 4 seasons as compact JSON.</p>
+        <p><strong>agents/season_pessimist.py</strong>: Looks for price-below-MSP events, declining arrival volumes, glut signals across seasons.</p>
+        <p><strong>agents/risk_analyst.py</strong>: MSP floor proximity (delta%), Kharif-vs-Rabi coverage risk, sparse-data commodity flags. Returns extra <code>risk_level: "High"|"Watch"|"Low"</code>.</p>
+        <p>All three use <code>llama-3.1-8b-instant</code>. Each returns: <code>{"verdict":"HOLD"|"LEAN_SELL"|"DEFER"|"PROTECT","confidence":0-100,"reasoning":"...","key_seasons":["2024-25",...]}</code>.</p>
+        <div class="file-tags"><span class="ft new">agents/season_optimist.py</span><span class="ft new">agents/season_pessimist.py</span><span class="ft new">agents/risk_analyst.py</span></div>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Build agents/mediator.py — synthesis call</div></div>
+      <div class="task-body">
+        <p>Takes all 3 verdicts + season data. Single Llama 8B call. Output must map 1:1 to frontend's <code>CommodityInsightSummary</code>: <code>recommendationLabel</code> is exactly <code>"Hold"|"Lean sell"|"Defer"|"Protect"</code>, <code>confidenceLabel</code> is exactly <code>"High confidence"|"Moderate confidence"|"Low confidence"</code>, <code>riskLevel</code> is exactly <code>"Low"|"Watch"|"High"</code>. These are TypeScript union types — any other string breaks the frontend silently.</p>
+        <div class="file-tags"><span class="ft new">agents/mediator.py</span></div>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Wire POST /api/recommendation/{commodity}</div></div>
+      <div class="task-body">
+        <p>Runs all 3 agents via <code>asyncio.gather()</code> then mediator sequentially. Returns full <code>CommodityInsightSummary</code> shape. Cache result in Python dict with 1h TTL — this prevents burning Groq RPD during all 4 of Member C's rehearsals. Without caching, 4 rehearsals × 3 commodity queries = 36 Groq calls. With caching = 9.</p>
+        <div class="file-tags"><span class="ft new">routers/insights.py</span></div>
+      </div>
+    </div>
+    <div class="milestone">
+      <span class="ms-lbl">Hour 6 Milestone — AI Recommendation Works</span>
+      <p>POST /api/recommendation/Cotton returns full insight shape. JSON matches TypeScript CommodityInsightSummary. Frontend RecommendationCard shows real AI output. Freeze scope if behind.</p>
+    </div>
+  </div>
+</div>
+
+<!-- HOUR 6-10 -->
+<div class="hour-block">
+  <div class="hour-head">
+    <span class="hour-num">HOUR 6–10</span>
+    <div><div class="hour-title">WebSocket Debate Stream</div><div class="hour-sub">Sequential agent arrival. Judges see AI thinking live.</div></div>
+  </div>
+  <div class="hour-body">
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Add WebSocket endpoint /ws</div></div>
+      <div class="task-body">
+        <p>Client sends <code>{"action":"start","commodity":"Cotton"}</code>. Server runs agents sequentially (with <code>asyncio.sleep(2)</code> stagger between pushes) and emits one event per stage. The stagger is intentional — it creates visible "agents arriving" theater. If WebSocket fails, frontend falls back to REST <code>POST /api/recommendation/{commodity}</code> which already works.</p>
+        <div class="code-box" style="margin:12px 0 0">
+          <code>// Event shape — Member B needs this exact contract
+{"stage":"optimist","data":{"verdict":"HOLD","confidence":72,"reasoning":"..."},"ts":"..."}
+{"stage":"pessimist","data":{"verdict":"LEAN_SELL","confidence":65,"reasoning":"..."},"ts":"..."}
+{"stage":"risk","data":{"verdict":"WATCH","risk_level":"High","reasoning":"..."},"ts":"..."}
+{"stage":"mediator","data":{"recommendationLabel":"Hold","confidenceLabel":"Moderate confidence","recommendationRationale":"...","conflict_score":"MEDIUM"}}</code>
+        </div>
+        <div class="file-tags"><span class="ft new">routers/ws.py</span></div>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Build fallback/canned_demo.py</div></div>
+      <div class="task-body">
+        <p>Pre-compute 3 full recommendation responses: Cotton, Paddy(Common), Groundnut. Store as static JSON dicts. Serve via <code>GET /demo/canned/{commodity}</code>. Zero external API calls. This is your WiFi-dies insurance. Build this now — before Hour 14 dry run, not after.</p>
+        <div class="file-tags"><span class="ft new">fallback/canned_demo.py</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOUR 10-14 -->
+<div class="hour-block">
+  <div class="hour-head">
+    <span class="hour-num">HOUR 10–14</span>
+    <div><div class="hour-title">Voice Pipeline End-to-End</div><div class="hour-sub">WhisperFlow → 3 agents → ElevenLabs. Close the loop.</div></div>
+  </div>
+  <div class="hour-body">
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Build voice/stt_whisperflow.py</div></div>
+      <div class="task-body">
+        <p>POST multipart audio to OpenAI Whisper API: <code>model="whisper-1"</code>, <code>language="te"</code>. Returns <code>{"text_te":"...","text_en":"..."}</code>. The English field requires a second Llama 8B translation call. Handle empty transcription: return 400 with <code>{"error":"no_speech_detected"}</code>. Handle Whisper API downtime: fall back to Groq Whisper Large v3 as backup STT.</p>
+        <div class="file-tags"><span class="ft new">voice/stt_whisperflow.py</span></div>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Build voice/tts_elevenlabs.py</div></div>
+      <div class="task-body">
+        <p>POST to ElevenLabs <code>/v1/text-to-speech/{voice_id}</code> with <code>model_id="eleven_multilingual_v2"</code>. Returns base64-encoded MP3. 5-second timeout. If timeout or non-200 response, return <code>None</code> — caller falls back to text-only. Test the voice_id for Telugu prosody at Hour 0 — not all voices handle Telugu well in Multilingual v2.</p>
+        <div class="file-tags"><span class="ft new">voice/tts_elevenlabs.py</span></div>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Build voice/voice_advisory.py — parallel 3-agent path</div></div>
+      <div class="task-body">
+        <p>Extract commodity name from Telugu query text using a Llama 8B entity-extraction prompt (e.g., "ఈ వాక్యం నుండి పంట పేరు తీయండి"). Load season data for that commodity. Run <code>asyncio.gather(season_optimist, season_pessimist, risk_analyst)</code>. Pass all 3 results to lightweight synthesizer that outputs a 2-3 sentence Telugu advisory paragraph. This paragraph feeds directly into ElevenLabs.</p>
+        <div class="file-tags"><span class="ft new">voice/voice_advisory.py</span></div>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Wire POST /voice/query — full loop</div></div>
+      <div class="task-body">
+        <p>Accept audio as multipart/form-data. Pipeline: STT → entity extraction → load season data → parallel agents → synthesize → ElevenLabs TTS. Return <code>{"text_response_te":"...","audio_base64":"..."|null,"commodity_detected":"Cotton","agent_verdicts":[...]}</code>. Always return at minimum the text response even if TTS fails.</p>
+        <div class="file-tags"><span class="ft new">routers/voice.py</span></div>
+      </div>
+    </div>
+    <div class="gate-block" style="margin-top:16px">
+      <span class="gate-lbl">Hour 14 · Full Dry-Run Gate</span>
+      <div class="gate-title">Complete demo walkthrough required.</div>
+      <ul class="gate-checks">
+        <li>POST /api/recommendation/Cotton → all 4 agent results via WebSocket within 12s</li>
+        <li>Voice query → Telugu text within 3s · audio within 7s (or text-only fallback works)</li>
+        <li>/demo/canned/Cotton → correct data with zero external calls</li>
+        <li>Browser console at localhost:3000 → zero CORS errors</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- HOUR 14-18 -->
+<div class="hour-block">
+  <div class="hour-head">
+    <span class="hour-num">HOUR 14–18</span>
+    <div><div class="hour-title">Integration + Hardening</div><div class="hour-sub">Pair with Member B. Fix the seams.</div></div>
+  </div>
+  <div class="hour-body">
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">3 uninterrupted hours paired with Member B</div></div>
+      <div class="task-body">
+        <p>Work side-by-side. One screen: browser at localhost:3000. Other screen: FastAPI terminal. The TypeScript contract is <code>CommodityInsightSummary</code> in <code>lib/canned-data.ts</code>. Common bugs: <code>riskLevel</code> casing (<code>"Low"</code> not <code>"low"</code>), <code>recommendationLabel</code> must be exactly <code>"Lean sell"</code> not <code>"LEAN_SELL"</code>, <code>priceTrend</code> must be <code>"up"|"down"|"flat"</code>, <code>latestDeltaPct</code> must be a decimal (0.12 not 12).</p>
+        <span class="dep">⚡ PAIRED SESSION WITH MEMBER B — CLEAR YOUR SCHEDULE</span>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Add graceful degradation everywhere</div></div>
+      <div class="task-body">
+        <p>Groq 429 → return cached result or canned response. ElevenLabs timeout → <code>audio_base64: null</code>. Commodity not found → 404 with nearest match suggestion. UI must never show a raw Python traceback. Every failure returns something the frontend can render.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOUR 18-22 -->
+<div class="hour-block">
+  <div class="hour-head">
+    <span class="hour-num">HOUR 18–22</span>
+    <div><div class="hour-title">Bug Bash + Rehearsal Support</div><div class="hour-sub">Keep the backend stable. Member C needs you to not break things.</div></div>
+  </div>
+  <div class="hour-body">
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Run verification checklist at Hour 18 and Hour 21</div></div>
+      <div class="task-body">
+        <p>Health check → commodities endpoint → recommendation endpoint → WebSocket stream → voice loop → canned demo. Any failure at Hour 21 is still fixable. A failure during the actual demo is not.</p>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Monitor Groq 429s during Member C's rehearsals</div></div>
+      <div class="task-body">
+        <p>4 rehearsals hitting real endpoints = possible rate limit burns. If 429s appear, switch Member C to <code>?demo=canned</code> immediately. Cache hit rate should be near 100% from rehearsal 2 onward — if it isn't, the TTL logic is broken.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="div">
+
+<!-- API TABLE -->
+<div class="kb">
+  <div class="kb-head">
+    <span class="sk">Quick Reference · API Surface</span>
+    <h2 class="kb-title">Every endpoint <em>you own.</em></h2>
+  </div>
+  <div style="padding:0 16px 24px">
+    <table class="api-table">
+      <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="mb get">GET</span></td><td>/health</td><td>Status · data_mode: season_wise · commodities: 14</td></tr>
+        <tr><td><span class="mb get">GET</span></td><td>/api/commodities</td><td>All 14 commodities + groups · drives frontend selectors</td></tr>
+        <tr><td><span class="mb get">GET</span></td><td>/api/season-data/{commodity}</td><td>Raw 4-season records for one commodity from loaded JSON</td></tr>
+        <tr><td><span class="mb get">GET</span></td><td>/api/insights/{commodity}</td><td>Computed MSP delta, trend direction, season availability — no LLM call</td></tr>
+        <tr><td><span class="mb post">POST</span></td><td>/api/recommendation/{commodity}</td><td>Runs 3 agents + mediator · returns full CommodityInsightSummary shape</td></tr>
+        <tr><td><span class="mb ws">WS</span></td><td>/ws</td><td>Streams agent events sequentially · 2s stagger · debates Cotton/Paddy/Groundnut</td></tr>
+        <tr><td><span class="mb post">POST</span></td><td>/voice/query</td><td>WhisperFlow STT → 3 parallel agents → ElevenLabs TTS · full voice loop</td></tr>
+        <tr><td><span class="mb post">POST</span></td><td>/voice/transcribe</td><td>STT only · returns text_te + text_en</td></tr>
+        <tr><td><span class="mb get">GET</span></td><td>/api/alerts</td><td>Risk alerts for commodities with Watch/High flags</td></tr>
+        <tr><td><span class="mb get">GET</span></td><td>/demo/canned/{commodity}</td><td>Pre-computed offline response · zero external calls · WiFi insurance</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="warn-block">
+  <span class="warn-lbl">⚠ Hour 22–24: Sleep</span>
+  <p>Minimum 2 hours. Verify <code>?demo=canned</code> works cold with no network. Record a backup video of the full demo flow. More hackathons are lost to exhaustion in Q&A than to technical failure. Your canned fallback is the safety net — present fresh knowing it exists.</p>
+</div>
+
+<p class="doc-footer">KrishiCFO · Member A · Backend · 24-Hour Hackathon Roadmap · Season-Wise Intelligence Build · April 2026</p>
+</body>
+</html>

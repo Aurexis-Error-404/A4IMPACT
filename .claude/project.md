@@ -1,634 +1,529 @@
-# KrishiCFO — PS-14 Implementation Plan
-## (Post Adversarial Review — v2.1)
+# KrishiCFO — Season-Wise Commodity Intelligence MVP
+## v4.0 — Grounded in Actual Repo State (April 17, 2026)
+
+---
+
+## What This File Is
+
+This is the canonical reference for every contributor. It reflects what is actually built, what the data actually contains, and what the contracts between layers actually are. When this file conflicts with an older PDF, a Slack message, or a verbal agreement — this file wins.
+
+---
 
 ## Context
 
-**Problem:** Indian farmers (e.g. Ramesh, Medak district) lose ₹40K+ per harvest season selling in the wrong mandi at the wrong time — not for lack of data, but because Agmarknet is an English spreadsheet no farmer reads.
+*Problem:* Indian farmers lose significant income each harvest season due to poor visibility into commodity price trends, MSP comparisons, and seasonal arrival patterns — not for lack of data, but because that data is inaccessible and unreadable in their language.
 
-**Solution:** KrishiCFO — a Telugu-speaking CFO for Indian farmers. Predicts crop prices via Prophet (Agmarknet data), runs a 4-agent debate (Optimist / Pessimist / Risk → Mediator) adapted from AGENT_IITH's stock market architecture, delivers the recommendation as a voice response in Telugu, shows a line-item ₹ profit breakdown, and sends proactive Twilio SMS alerts before the farmer thinks to ask.
+*Solution (Current MVP):* A seasonal commodity intelligence dashboard. Helps users compare MSP, seasonal prices, and seasonal arrivals across four years for 14 major commodities using the season-wise dataset already checked into this repo.
 
-**Key constraints:**
-- Agmarknet data NOT downloaded yet → data ingestion is critical path, starts Hour 0
-- ElevenLabs setup/API key is needed for voice output → configure at Hour 0, text output is primary demo path if unavailable
-- Free tier only: Groq, ElevenLabs, Supabase, Railway, Vercel, Upstash, Twilio trial
+*What changed from v3.0:* The v3.0 plan listed 7 planned frontend components. The actual frontend now has 19 built components, a complete dark glass design system, 3 live routes, and full TypeScript type coverage. The component inventory, repo structure, and type definitions in this document reflect what is actually in front_data.
 
 ---
 
-## Critical Fixes from Adversarial Review
+## Build Status (as of April 17, 2026)
 
-| Issue | Original Plan | Fix Applied |
+| Layer | Status | Notes |
 |---|---|---|
-| Kurnool is in Andhra Pradesh, not Telangana | Listed as Telangana mandi | **Replaced with Karimnagar** (major turmeric market in Telangana) |
-| Groq RPD will be exhausted by 11-call debate | Qwen3-32B for all 4 agents | **Model routing:** agents → Llama 3.1 8B (14,400 RPD); mediator → Qwen3-32B (1 call/query) |
-| Voice path <10s with full debate is impossible | Full debate in voice loop | **Voice path decoupled:** single LLM advisory call, not debate |
-| 6.8% MAPE claim is unsupported | Claimed 6.8% in pitch | **Removed. Target: 8–12% with tuning, publish actual holdout MAPE per crop** |
-| Fake citation source-tier mechanics | Sources like "WhatsApp Group" cited | **Removed source-tier debate citations.** Agents cite actual data values (Prophet bands, price deltas, weather mm) |
-| Kelly weights misapplied to sell-timing | Kelly Criterion for portfolio allocation | **Replaced with deterministic rule aggregation** (forecast delta + storage cost + confidence gap) |
-| APMC fee ownership wrong | Fee charged to farmer at 1.5% | **Clarified: APMC fee paid by buyer/trader; farmer receives net price after trader deduction** |
-| No offline fallback | All APIs required for demo | **Added: canned-data local fallback mode** that runs without any external API calls |
-| Farmer cost price never collected | Logic "sell if yhat_lower near cost price" | **Removed** that logic; or make cost price an explicit UI input |
-| OpenRouteService in critical path | Live routing API call | **Replaced with hardcoded distance table as primary; ORS as optional enhancement** |
+| Data normalization | ✅ Complete | 4 CSVs → season_report_summary.json |
+| Frontend shell + routes | ✅ Complete | /, /dashboard, /commodity/[slug] |
+| Frontend components | ✅ Complete | 19 components, all on canned data |
+| TypeScript type system | ✅ Complete | Full contracts in lib/canned-data.ts |
+| Design system | ✅ Complete | Dark glass, Fraunces + Lora + Martian Mono |
+| FastAPI backend | ❌ Not started | Member A scope |
+| AI recommendation layer | ❌ Not started | 3-agent pipeline, Member A scope |
+| WebSocket debate stream | ❌ Not started | Member A scope |
+| Backend integration in lib/api.ts | ⏳ Blocked | Currently calls canned functions only; blocked on backend |
+| Voice pipeline | 🔜 Phase 2 | WhisperFlow + ElevenLabs + 3 parallel agents |
 
 ---
 
-## Architecture
+## Working Dataset
 
-### Two Paths — One UI
+Located in crop_data/. Four season-wise commodity reports:
 
-```
-Next.js 14 (Vercel)
-  ↕ REST + WebSocket (streaming debate for web path)
-FastAPI (Railway)
-  │
-  ├── VOICE PATH (latency-first, single LLM call)
-  │     Local Whisper STT → Llama 3.1 8B advisory → ElevenLabs TTS
-  │     Target: < 6s text, < 9s audio
-  │
-  └── WEB PATH (quality-first, full debate)
-        Prophet forecast
-        → asyncio.gather(Optimist, Pessimist, Risk) via Llama 3.1 8B
-        → Debate round (max 1 round) via Llama 3.1 8B
-        → Mediator via Qwen3-32B (1 call/query)
-        → Telugu wrapper via Llama 3.1 8B
-        → WebSocket broadcast
-  │
-  Supabase (Postgres) + Upstash Redis (forecast cache TTL=1h)
-```
+| File | Season |
+|---|---|
+| Crop_Season_Wise_Price_Arrival_17-04-2026_03-21-29_PM.csv | 2025-26 |
+| Crop_Season_Wise_Price_Arrival_17-04-2026_03-25-50_PM.csv | 2024-25 |
+| Crop_Season_Wise_Price_Arrival_17-04-2026_03-26-45_PM.csv | 2023-24 |
+| Crop_Season_Wise_Price_Arrival_17-04-2026_03-27-50_PM.csv | 2022-23 |
 
-**LLM routing (corrected for rate limits):**
+This is *season-wise commodity data* — not mandi-wise, not daily, not date-granular.
 
-| Task | Model | Free RPD | Calls/query |
+### Data Model
+
+Each CSV shares this structure:
+
+| Column | Description |
+|---|---|
+| Commodity Group | Cereals / Fibre Crops / Oil Seeds / Pulses |
+| Commodity | Specific crop name |
+| MSP (Rs./Quintal) <season> | Minimum Support Price for the season |
+| Kharif Marketing Season Price (Rs./Quintal) | Average Kharif price |
+| Kharif Marketing Season Arrival (Metric Tonnes) | Kharif arrival volume |
+| Rabi Marketing Season Price (Rs./Quintal) | Average Rabi price |
+| Rabi Marketing Season Arrival (Metric Tonnes) | Rabi arrival volume |
+
+### Commodity Groups and Confirmed Commodities
+
+*Cereals:* Jowar (Sorghum), Maize, Paddy (Common)
+
+*Fibre Crops:* Cotton
+
+*Oil Seeds:* Groundnut, Mustard, Safflower, Sesamum (Sesame, Gingelly, Til), Soyabean, Sunflower / Sunflower Seed
+
+*Pulses:* Arhar (Tur / Red Gram)(Whole), Bengal Gram (Gram)(Whole), Black Gram (Urd Beans)(Whole), Green Gram (Moong)(Whole)
+
+### Normalized Record Shape
+
+json
+{
+  "season_year": "2025-26",
+  "commodity_group": "Oil Seeds",
+  "commodity": "Groundnut",
+  "msp": 7263.0,
+  "kharif_price": 5066.59,
+  "kharif_arrival_tonnes": 252.07,
+  "rabi_price": null,
+  "rabi_arrival_tonnes": null,
+  "source_file": "Crop_Season_Wise_Price_Arrival_17-04-2026_03-21-29_PM.csv"
+}
+
+
+Missing values: raw - becomes null in JSON, empty field in CSV. Raw CSV files are never modified.
+
+---
+
+## TypeScript Type System
+
+These types live in frontend/lib/canned-data.ts and are the *canonical contracts* for every layer. The backend must return shapes compatible with these types. Do not change these without updating both the backend contract and the frontend simultaneously.
+
+ts
+// Primitive union types — use exact string values, no case variations
+type SeasonAvailability  = "Kharif only" | "Rabi only" | "Both" | "Sparse";
+type RiskLevel           = "Low" | "Watch" | "High";
+type TrendDirection      = "up" | "down" | "flat";
+type RecommendationLabel = "Hold" | "Lean sell" | "Defer" | "Protect";
+
+// Raw normalized record — maps 1:1 to season_report_summary.json
+type SeasonPriceRecord = {
+  season_year: string;
+  commodity_group: string;
+  commodity: string;
+  msp: number | null;
+  kharif_price: number | null;
+  kharif_arrival_tonnes: number | null;
+  rabi_price: number | null;
+  rabi_arrival_tonnes: number | null;
+  source_file: string;
+};
+
+// Full computed insight shape — consumed by RecommendationCard, RiskPanel,
+// HeroCanvas, MSPComparisonRail, and the commodity detail page
+type CommodityInsightSummary = {
+  commodity: string;
+  group: string;
+  latestSeason: string;
+  latestMsp: number | null;
+  latestReferencePrice: number | null;
+  latestDelta: number;
+  latestDeltaPct: number;           // decimal e.g. 0.12 = 12%. NOT 12.
+  latestDeltaLabel: string;
+  highestSeason: string;
+  highestPriceLabel: string;
+  priceTrend: TrendDirection;
+  trendChangePct: number;
+  seasonAvailability: SeasonAvailability;
+  kharifShare: number;
+  rabiShare: number;
+  riskLevel: RiskLevel;
+  recommendationLabel: RecommendationLabel;
+  confidenceLabel: string;          // "High confidence" | "Moderate confidence" | "Low confidence"
+  recommendationRationale: string;
+};
+
+// Alert item — consumed by AlertSeverityStack
+type AlertItem = {
+  id: string;
+  severity: "red" | "amber" | "green";
+  commodity: string;
+  group: string;
+  headline: string;
+  detail: string;
+  season: string;
+};
+
+// Pulse feed event — consumed by MarketPulseFeed
+type PulseEvent = {
+  id: string;
+  commodity: string;
+  group: string;
+  season: string;
+  deltaLabel: string;
+  delta: number;
+  label: string;
+  timeAgo: string;
+};
+
+// Compact card shape — used on dashboard commodity grid
+type CommodityCardSummary = {
+  slug: string;
+  commodity: string;
+  group: string;
+  latestSeason: string;
+  latestReferencePrice: number | null;
+  latestMsp: number | null;
+  latestDeltaPct: number;
+  riskLevel: RiskLevel;
+  seasonAvailability: SeasonAvailability;
+  recommendationLabel: RecommendationLabel;
+  priceTrend: TrendDirection;
+};
+
+// Top-level dashboard payload
+type DashboardSummary = {
+  dataMode: string;              // always "seasonal_commodity" for this version
+  totalCommodities: number;
+  totalGroups: number;
+  spotlight: CommodityCardSummary | null;
+};
+
+
+*Strict mode is on.* String union literals are case-sensitive. "lean sell" is a type error. "HOLD" is a type error. latestDeltaPct: 12 is a type error — must be 0.12.
+
+---
+
+## Insight Logic
+
+Computed in lib/canned-data.ts for every commodity. The backend must replicate this exactly when serving CommodityInsightSummary.
+
+| Field | Computation |
+|---|---|
+| latestReferencePrice | kharif_price for Kharif-bearing seasons; rabi_price for Rabi-only commodities |
+| latestDelta | latestReferencePrice - latestMsp |
+| latestDeltaPct | latestDelta / latestMsp — decimal |
+| priceTrend | Compare last two seasons' reference price: up / down / flat (±3% threshold) |
+| trendChangePct | (current - previous) / previous — decimal |
+| seasonAvailability | Derived from which season fields are non-null across all 4 records |
+| kharifShare | Fraction of 4 seasons where kharif_price is non-null |
+| rabiShare | Fraction of 4 seasons where rabi_price is non-null |
+| riskLevel | "High" if latestDeltaPct < -0.05; "Watch" if within ±5% of MSP; "Low" otherwise |
+| highestSeason | Season with highest latestReferencePrice across all 4 years |
+
+*Recommendation label mapping:*
+
+| riskLevel | priceTrend | recommendationLabel |
+|---|---|---|
+| Low | up | Hold |
+| Low | flat | Hold |
+| Low | down | Defer |
+| Watch | up | Lean sell |
+| Watch | flat | Lean sell |
+| Watch | down | Defer |
+| High | any | Protect |
+
+---
+
+## Design System
+
+The frontend uses a dark glass aesthetic. Do not deviate without team agreement.
+
+css
+/* Core CSS variables — globals.css */
+--bg:     #0f120e;                          /* page background */
+--ink:    #f4f0e7;                          /* primary text */
+--muted:  #acb2a4;                          /* secondary text */
+--gold:   #ef9f27;                          /* primary accent */
+--olive:  #639922;                          /* success / positive */
+--teal:   #1d9e75;                          /* data / metric */
+--red:    #e24b4a;                          /* risk / negative */
+--violet: #7f77dd;                          /* AI / agent layer */
+--panel:  rgba(255, 255, 255, 0.055);
+--border: rgba(255, 255, 255, 0.08);
+--shadow: 0 24px 90px rgba(0, 0, 0, 0.42);
+--ease:   cubic-bezier(0.22, 1, 0.36, 1);
+
+
+*Fonts (loaded via next/font/google in layout.tsx):*
+- Fraunces — display headings, hero titles, large numerics
+- Lora — body text, card copy, prose
+- Martian Mono — labels, metadata, code, tags, nav links, KPI values
+
+*Panels:* border: 1px solid rgba(255,255,255,0.06), border-radius: 24px, backdrop-filter: blur(28px), background: rgba(255,255,255,0.03).
+
+*Background:* body::before applies a blurred, darkened bg.jpg at fixed position via filter: blur(12px) brightness(0.35).
+
+---
+
+## Repo Structure (Actual)
+
+
+A4IMPACT/
+├── .claude/
+│   ├── project.md                             ← this file
+│   └── settings.json
+├── crop_data/
+│   ├── Crop_Season_Wise_...03-21-29_PM.csv    ← 2025-26 raw (do not modify)
+│   ├── Crop_Season_Wise_...03-25-50_PM.csv    ← 2024-25 raw (do not modify)
+│   ├── Crop_Season_Wise_...03-26-45_PM.csv    ← 2023-24 raw (do not modify)
+│   ├── Crop_Season_Wise_...03-27-50_PM.csv    ← 2022-23 raw (do not modify)
+│   ├── normalize_season_reports.py            ← merges all 4 CSVs into one dataset
+│   ├── season_report_summary.csv              ← generated flat output
+│   ├── season_report_summary.json             ← generated structured output; used by frontend
+│   ├── data_dictionary.md                     ← field definitions
+│   └── README.md
+├── Project_role/
+│   ├── KrishiCFO · Member B · Data + Frontend · 24h Roadmap.pdf
+│   └── member-b-execution-plan.md
+├── frontend/
+│   ├── app/
+│   │   ├── layout.tsx                         ← Fraunces + Lora + Martian Mono, imports globals.css
+│   │   ├── globals.css                        ← full design system + all component CSS
+│   │   ├── page.tsx                           ← landing page with hero + spotlight card
+│   │   ├── dashboard/
+│   │   │   └── page.tsx                       ← main commodity intelligence dashboard
+│   │   └── commodity/
+│   │       └── [slug]/
+│   │           └── page.tsx                   ← commodity detail route
+│   ├── components/
+│   │   ├── TopNav.tsx
+│   │   ├── HeroCanvas.tsx
+│   │   ├── CommodityGroupSelector.tsx
+│   │   ├── CommoditySelector.tsx
+│   │   ├── CommodityFilterBar.tsx
+│   │   ├── SeasonPriceChart.tsx
+│   │   ├── SeasonArrivalChart.tsx
+│   │   ├── SeasonalComparisonPanel.tsx
+│   │   ├── SeasonAvailabilityBand.tsx
+│   │   ├── SeasonSplitBar.tsx
+│   │   ├── MSPComparisonCard.tsx
+│   │   ├── PriceDeviationGauge.tsx
+│   │   ├── RiskPanel.tsx
+│   │   ├── RecommendationCard.tsx             ← needs real backend AI data
+│   │   ├── AlertSeverityStack.tsx
+│   │   ├── MarketPulseFeed.tsx
+│   │   ├── CommoditySummaryTable.tsx
+│   │   ├── TrendArrowBadge.tsx
+│   │   ├── CommodityDetailNav.tsx
+│   │   └── VoiceButton.tsx                    ← Phase 2 only; not yet wired
+│   ├── lib/
+│   │   ├── canned-data.ts                     ← all types + all data functions
+│   │   └── api.ts                             ← fetch wrappers; currently calls canned functions only
+│   ├── public/
+│   ├── .env.example                           ← NEXT_PUBLIC_API_URL=http://localhost:8000
+│   ├── next.config.mjs
+│   ├── package.json                           ← Next.js 14.2, React 18, TypeScript 5.4
+│   └── tsconfig.json                          ← strict: true, moduleResolution: bundler
+├── .gitignore
+└── package-lock.json
+
+
+---
+
+## Frontend Component Inventory
+
+| Component | Status | Consumes | Notes |
 |---|---|---|---|
-| 3 agents (Optimist/Pessimist/Risk) | Llama 3.1 8B Instant | 14,400 | 3 |
-| Debate rebuttal | Llama 3.1 8B Instant | 14,400 | ≤3 |
-| Mediator synthesis | Qwen3-32B | 1,000 | 1 |
-| Telugu response wrapper (voice) | Llama 3.1 8B Instant | 14,400 | 1 |
-| Telugu STT | Local Whisper | Local | 1 |
-| Query translation (Te→En) | Llama 3.1 8B Instant | 14,400 | 1 |
-
-**Queries per day before Qwen3-32B RPD exhaustion: 1,000 (mediator is the bottleneck)**
-**For voice path (no mediator): effectively unlimited via Llama 8B**
-
-**TPM management:** Add 2s stagger between parallel agent calls (`asyncio.sleep(2)`) to spread TPM load across 6s instead of 50ms burst. Aggressive Redis caching means same crop+mandi combo hits cache, not LLM.
-
----
-
-## Mandis (corrected — all in Telangana)
-
-| Mandi | District | Key Crops |
-|---|---|---|
-| Warangal | Warangal Urban | Tomato, Chili |
-| Hyderabad (Bowenpally) | Medchal | All 4 crops |
-| Nizamabad | Nizamabad | Onion, Turmeric |
-| **Karimnagar** | Karimnagar | Turmeric, Chili ← replaces Kurnool (AP) |
-| Nalgonda | Nalgonda | Tomato, Onion |
+| TopNav.tsx | ✅ Built | — | Pill nav, gold brand mark, Martian Mono links |
+| HeroCanvas.tsx | ✅ Built | CommodityInsightSummary | Hero headline + trend badge + key metrics |
+| CommodityGroupSelector.tsx | ✅ Built | groups list | Drives all other components |
+| CommoditySelector.tsx | ✅ Built | commodities list | Filtered by selected group |
+| CommodityFilterBar.tsx | ✅ Built | both selectors | Combined filter bar for dashboard |
+| SeasonPriceChart.tsx | ✅ Built | SeasonPriceRecord[] | 4-season price chart, custom SVG paths |
+| SeasonArrivalChart.tsx | ✅ Built | SeasonPriceRecord[] | Arrival volume bar chart |
+| SeasonalComparisonPanel.tsx | ✅ Built | SeasonPriceRecord[], CommodityInsightSummary | Cross-season comparison |
+| SeasonAvailabilityBand.tsx | ✅ Built | SeasonAvailability | Kharif / Rabi / Both / Sparse indicator |
+| SeasonSplitBar.tsx | ✅ Built | kharifShare, rabiShare | Kharif vs Rabi proportion bar |
+| MSPComparisonCard.tsx | ✅ Built | CommodityInsightSummary | MSP floor + deviation gauge + KPI rail |
+| PriceDeviationGauge.tsx | ✅ Built | latestDeltaPct | Visual gauge for MSP floor distance |
+| RiskPanel.tsx | ✅ Built | CommodityInsightSummary | Low/Watch/High badge + risk-item grid |
+| RecommendationCard.tsx | ⚡ Needs AI | CommodityInsightSummary | Shell renders canned label/rationale. Needs real /api/recommendation from backend. |
+| AlertSeverityStack.tsx | ✅ Built | AlertItem[] | Red/amber/green stacked alert cards |
+| MarketPulseFeed.tsx | ✅ Built | PulseEvent[] | Pulse event feed, currently canned |
+| CommoditySummaryTable.tsx | ✅ Built | SeasonPriceRecord[] | 4-season tabular view |
+| TrendArrowBadge.tsx | ✅ Built | TrendDirection | Up / down / flat indicator |
+| CommodityDetailNav.tsx | ✅ Built | slug | Tab navigation for /commodity/[slug] |
+| VoiceButton.tsx | 🔜 Phase 2 | /voice/query | MediaRecorder → WhisperFlow → ElevenLabs |
 
 ---
 
-## Folder Structure
+## Backend Scope
 
-```
-krishicfo/
-├── backend/                        # Python FastAPI → Railway
-│   ├── main.py                     # app, CORS, WebSocket, lifespan
-│   ├── config.py                   # Pydantic Settings
-│   ├── requirements.txt
-│   ├── agents/
-│   │   ├── llm.py                  # Groq client, extract_last_json, exponential backoff on 429
-│   │   ├── optimist.py             # Llama 8B: Prophet upper band + seasonality signals
-│   │   ├── pessimist.py            # Llama 8B: Prophet lower band + glut/weather signals
-│   │   ├── risk.py                 # Llama 8B: transport/APMC/weather disruptions
-│   │   ├── debate.py               # 1-round max rebuttal; deterministic rule aggregation
-│   │   ├── mediator.py             # Qwen3-32B: 3 farmer personas + conflict scoring
-│   │   └── advisory.py             # Llama 8B: single-call advisory for voice path
-│   ├── data/
-│   │   ├── agmarknet_ingest.py     # CSV parse, outlier flagging (NOT removal), Supabase upsert
-│   │   ├── agmarknet_scraper.py    # Selenium fallback if site is down
-│   │   ├── weather.py              # Open-Meteo rainfall (no key)
-│   │   └── transport.py            # hardcoded distance table (primary) + ORS (optional)
-│   ├── forecasting/
-│   │   ├── prophet_model.py        # fit/predict, rolling-origin MAPE, holiday regressors
-│   │   └── model_cache.py          # Upstash Redis TTL=1h + in-memory dict fallback
-│   ├── profit/
-│   │   └── calculator.py           # line-item ₹ breakdown (transport, APMC buyer-side, labor, packaging)
-│   ├── voice/
-│   │   ├── stt.py                  # local Whisper inference, language="te"
-│   │   └── tts.py                  # ElevenLabs TTS (5s timeout) → browser/client-side text fallback
-│   ├── alerts/
-│   │   └── sms.py                  # Twilio Unicode Telugu SMS (verified numbers only)
-│   ├── fallback/
-│   │   └── canned_demo.py          # static pre-computed responses for offline/contingency demo
-│   ├── db/
-│   │   ├── supabase_client.py      # async Supabase wrapper
-│   │   └── schema.sql
-│   └── routers/
-│       ├── analyze.py              # POST /analyze, WS /ws
-│       ├── voice.py                # POST /voice/query, /voice/transcribe
-│       ├── forecast.py             # GET /forecast/{crop}/{mandi}
-│       ├── profit.py               # POST /profit/calculate
-│       ├── alerts.py               # POST /alerts/sms/subscribe, /send
-│       └── fpo.py                  # GET /fpo/choropleth/{crop}
-│
-└── frontend/                       # Next.js 14 → Vercel
-    ├── app/
-    │   ├── page.tsx                # Landing
-    │   ├── dashboard/page.tsx      # Farmer interface (text-first; voice = enhancement)
-    │   └── fpo/page.tsx            # FPO choropleth dashboard
-    ├── components/
-    │   ├── VoiceButton.tsx         # MediaRecorder → blob → API → audio playback (optional)
-    │   ├── AgentDebate.tsx         # 4 agent cards (adapted from AGENT_IITH DebateSection.jsx)
-    │   ├── PriceChart.tsx          # Prophet yhat + confidence bands (Recharts)
-    │   ├── ProfitBreakdown.tsx     # Kirana receipt-style ₹ table
-    │   ├── MandiSelector.tsx       # 5 Telangana mandis (updated)
-    │   ├── CropSelector.tsx        # Tomato / Onion / Chili / Turmeric
-    │   └── ChoroplethMap.tsx       # react-simple-maps + telangana.geojson
-    ├── lib/
-    │   ├── api.ts                  # typed fetch wrappers with canned-data fallback
-    │   └── websocket.ts            # WS hook + REST polling fallback (exponential backoff)
-    └── public/
-        └── telangana.geojson       # district boundary GeoJSON
-```
+The backend does not yet exist. Member A owns it entirely. It runs at localhost:8000.
 
----
+### Stack
 
-## Supabase Schema (`backend/db/schema.sql`)
 
-```sql
-CREATE TABLE price_records (
-  id            BIGSERIAL PRIMARY KEY,
-  state         TEXT DEFAULT 'Telangana',
-  district      TEXT NOT NULL,
-  mandi         TEXT NOT NULL,
-  commodity     TEXT NOT NULL,
-  variety       TEXT,
-  arrival_date  DATE NOT NULL,
-  modal_price   NUMERIC(10,2) NOT NULL,
-  min_price     NUMERIC(10,2),
-  max_price     NUMERIC(10,2),
-  is_anomaly    BOOLEAN DEFAULT FALSE,  -- flagged, NOT removed
-  created_at    TIMESTAMPTZ DEFAULT NOW()
-);
-CREATE UNIQUE INDEX ON price_records(mandi, commodity, variety, arrival_date);
-CREATE INDEX ON price_records(commodity, mandi, arrival_date DESC);
+Python FastAPI
+uvicorn --host 0.0.0.0 --port 8000
+In-memory dict from season_report_summary.json (no database required)
+Groq Llama 3.1 8B — AI recommendation and agent layer
 
-CREATE TABLE forecasts (
-  id            BIGSERIAL PRIMARY KEY,
-  crop          TEXT NOT NULL,
-  mandi         TEXT NOT NULL,
-  forecast_date DATE NOT NULL,
-  yhat          NUMERIC(10,2),
-  yhat_lower    NUMERIC(10,2),
-  yhat_upper    NUMERIC(10,2),
-  mape_rolling  NUMERIC(6,4),  -- rolling-origin MAPE across 3 windows, not single holdout
-  model_run_at  TIMESTAMPTZ DEFAULT NOW()
-);
-CREATE INDEX ON forecasts(crop, mandi, forecast_date);
 
-CREATE TABLE crop_signals (
-  id            BIGSERIAL PRIMARY KEY,
-  run_id        UUID NOT NULL,
-  crop          TEXT NOT NULL,
-  mandi         TEXT NOT NULL,
-  agent         TEXT NOT NULL,  -- optimist|pessimist|risk|mediator
-  verdict       TEXT,
-  confidence    INTEGER,
-  reasons       JSONB,          -- [{text, data_value, weight}] — no fake source citations
-  decision      TEXT,
-  conflict_score TEXT,
-  trigger_advice TEXT,
-  rationale     TEXT,
-  created_at    TIMESTAMPTZ DEFAULT NOW()
-);
-CREATE INDEX ON crop_signals(run_id);
+### CORS
 
-CREATE TABLE farmer_sessions (
-  id            BIGSERIAL PRIMARY KEY,
-  phone_hash    TEXT,           -- SHA-256 of phone, never store raw
-  crop          TEXT,
-  mandi         TEXT,
-  role          TEXT CHECK (role IN ('user','assistant')),
-  content_te    TEXT,
-  content_en    TEXT,
-  -- No audio_url stored: privacy
-  created_at    TIMESTAMPTZ DEFAULT NOW()
-);
+Must be registered *before* all routes in main.py:
 
-CREATE TABLE profit_calculations (
-  id              BIGSERIAL PRIMARY KEY,
-  run_id          UUID NOT NULL,
-  crop            TEXT,
-  mandi           TEXT,
-  quantity_qtl    NUMERIC(8,2),
-  net_profit      NUMERIC(12,2),
-  incremental_gain NUMERIC(12,2),
-  line_items      JSONB,
-  created_at      TIMESTAMPTZ DEFAULT NOW()
-);
+python
+from fastapi.middleware.cors import CORSMiddleware
 
-CREATE TABLE sms_alerts (
-  id            BIGSERIAL PRIMARY KEY,
-  phone_hash    TEXT NOT NULL,  -- SHA-256, not raw phone
-  twilio_to     TEXT NOT NULL,  -- raw phone stored only here for Twilio, delete after send
-  crop          TEXT NOT NULL,
-  mandi         TEXT NOT NULL,
-  threshold_pct NUMERIC(5,2) DEFAULT 15.0,
-  message_te    TEXT,
-  twilio_sid    TEXT,
-  sent_at       TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE fpo_district_stats (
-  id              BIGSERIAL PRIMARY KEY,
-  district        TEXT NOT NULL,
-  crop            TEXT NOT NULL,
-  avg_modal_price NUMERIC(10,2),
-  price_trend_pct NUMERIC(6,2),
-  computed_at     TIMESTAMPTZ DEFAULT NOW()
-);
-CREATE UNIQUE INDEX ON fpo_district_stats(district, crop, computed_at::DATE);
-```
-
----
-
-## API Route Map
-
-```
-GET  /health                              → {status, models_loaded, prophet_crops, cache_hits}
-WS   /ws                                 → streams: agent results, debate turns, mediator
-
-POST /analyze                            → {crop, mandi, quantity_qtl, persona, phone?}
-GET  /forecast/{crop}/{mandi}            → {forecast_14d, current_price, mape_rolling}
-POST /profit/calculate                   → {run_id, quantity_qtl, farm_km_to_mandi, cost_price_per_qtl?}
-POST /voice/transcribe                   → multipart audio → {text_en, text_te}
-POST /voice/query                        → {audio_base64, crop, mandi, persona}
-                                            → single LLM advisory call (NOT full debate)
-POST /alerts/sms/subscribe               → {phone, crop, mandi, threshold_pct}
-POST /alerts/sms/send                    → trigger (internal/cron)
-GET  /fpo/choropleth/{crop}              → GeoJSON FeatureCollection with price data
-POST /admin/ingest                       → trigger Agmarknet CSV ingest (token-gated)
-POST /admin/refit-prophet                → refit all models (token-gated)
-GET  /demo/canned/{crop}/{mandi}         → pre-computed offline demo response
-```
-
----
-
-## Agent System Prompts (post adversarial review)
-
-**No fake source citations.** Agents cite actual computed data values:
-- Prophet `yhat`, `yhat_upper`, `yhat_lower` (injected as numbers)
-- Price delta over last 7 days (computed from Agmarknet)
-- Rainfall mm forecast from Open-Meteo (injected as number)
-- Arrival volume trend (computed from Agmarknet)
-
-**Debate simplification — removed:**
-- Source-tier Bayesian scoring (was hallucinated citations)
-- Kelly Criterion weights (misapplied from stock domain)
-- Delphi multi-round updates (replaced with single rebuttal round)
-
-**Replaced with deterministic rule aggregation in `debate.py`:**
-```python
-def aggregate_verdicts(optimist, pessimist, risk):
-    # Count weighted verdicts
-    sell_score = 0
-    hold_score = 0
-    for agent_result, weight in [(optimist, 1.0), (pessimist, 1.2), (risk, 1.5)]:
-        if "SELL" in agent_result["verdict"]:
-            sell_score += weight * (agent_result["confidence"] / 100)
-        else:
-            hold_score += weight * (agent_result["confidence"] / 100)
-    conflict = "HIGH" if abs(sell_score - hold_score) < 0.3 else \
-               "MEDIUM" if abs(sell_score - hold_score) < 0.6 else "LOW"
-    return {"sell_score": sell_score, "hold_score": hold_score, "conflict": conflict}
-```
-
-**Mediator personas** (3 farmer types, Qwen3-32B only):
-- `small_farmer` → conservative (risk weight 1.5×): SELL_NOW if risk agent says HOLD
-- `medium_farmer` → balanced: factor ₹50/quintal/week storage cost vs. price gain
-- `fpo` → moderate (bulk transport ₹12/km, can split across 2 mandis)
-
-**Note on SELL_NOW logic:** Removed "sell if yhat_lower near cost price" (requires cost price input never collected). Replaced with: "sell if yhat_lower < current_modal_price × 0.9" — observable from data alone.
-
----
-
-## Voice Pipeline (decoupled from debate)
-
-```
-Browser MediaRecorder → WAV blob
-→ POST /voice/query
-→ Local Whisper (language="te") → text_te                   [0.7s]
-→ Llama 3.1 8B: translate text_te → English intent          [0.4s]
-→ Fetch Prophet cache for crop+mandi (Redis, usually hit)    [0.1s]
-→ Llama 3.1 8B: single advisory call                        [1.2s]
-  (receives: forecast summary + profit calc output + persona)
-→ ElevenLabs TTS (5s timeout)                               [0.8s]
-  → fallback: return Telugu text immediately, audio optional
-→ Return {text_response_te, audio_base64_te, run_id}
-→ Frontend: show text immediately, play audio when ready
-
-Text response target: < 3s. Audio target: < 7s.
-```
-
-**Voice path does NOT trigger the 4-agent debate.** Debate runs only on web path. This removes the Qwen3-32B RPD cost from every voice query.
-
-**ElevenLabs contingency:** If ElevenLabs is unavailable or quota-limited at demo time, show text response in Telugu and skip audio. Pre-generate 3 sample audio clips (Tomato/Warangal, Onion/Hyderabad, Chili/Karimnagar) for the demo's voice moment.
-
----
-
-## Profit Calculator Formula (`backend/profit/calculator.py`)
-
-```
-TATA_ACE_RATE     = ₹17/km  (Telangana, loaded with produce)
-APMC_BUYER_FEE    = 1.5%    — PAID BY BUYER/TRADER, reduces the price farmer receives
-                              Represented as: effective_farmer_price = modal_price × (1 - 0.015)
-LABOR             = ₹200/quintal (loading + unloading, farmer-borne)
-PACKAGING         = ₹15/quintal (gunny bags)
-COLD_STORAGE      = ₹50/quintal/week (medium farmer only)
-FPO_TRANSPORT     = ₹12/km   (bulk discount, FPO persona)
-
-trucks            = ceil(quantity_qtl / 10)
-transport_cost    = trucks × km × rate_per_km
-effective_price   = target_price × (1 - 0.015)      # net of APMC buyer deduction
-gross_revenue     = quantity_qtl × effective_price
-net_profit        = gross_revenue - transport_cost - labor - packaging - storage_cost
-
-incremental_gain  = net_profit(target_date) - net_profit(sell_today)
-
-# Cost price input (optional — show input field in UI)
-# If provided: show break-even analysis
-# If not provided: omit break-even line from output
-```
-
----
-
-## Agmarknet Data Ingestion (`backend/data/agmarknet_ingest.py`)
-
-**Target:** Tomato, Onion, Chili (Dry Chilli), Turmeric × 5 Telangana mandis (Warangal, Bowenpally, Nizamabad, Karimnagar, Nalgonda), 2022–present.
-
-**Commodity normalization:**
-```python
-{"Tomato": "Tomato", "Onion": "Onion", "Dry Chilli": "Chili",
- "Chilli": "Chili", "Turmeric": "Turmeric"}
-```
-
-**Anomaly handling (changed from adversarial review — DO NOT remove outliers):**
-```python
-# IQR is used to FLAG anomalies, not remove them
-# Prophet handles supply shocks better when they are present (as changepoints)
-# Setting is_anomaly=True lets the UI show "unusual price event" tooltip
-Q1 = group["modal_price"].quantile(0.25)
-Q3 = group["modal_price"].quantile(0.75)
-IQR = Q3 - Q1
-df["is_anomaly"] = (df["modal_price"] < Q1 - 2.5*IQR) | (df["modal_price"] > Q3 + 2.5*IQR)
-```
-
-**Gap filling:** Forward-fill up to 3 consecutive missing days. Drop rows with > 3-day gaps (non-functional market periods).
-
-**Fallback sources if agmarknet.gov.in is down:**
-1. `data.gov.in` — "Telangana commodity daily" CSVs
-2. `github.com/akhilesh-k/agmarket-price-data` — 3 years of historical data
-
----
-
-## Prophet Model Setup (`backend/forecasting/prophet_model.py`)
-
-```python
-Prophet(
-    changepoint_prior_scale=0.05,  # conservative — agri prices have seasonal structure
-    seasonality_prior_scale=10.0,
-    yearly_seasonality=True,
-    weekly_seasonality=True,
-    daily_seasonality=False,
-    interval_width=0.80,
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-```
 
-- Add `country_holidays(country_name="IN")` — Diwali, Sankranti demand effects
-- External regressor: `rainfall_mm` from Open-Meteo for **Tomato only** initially (validate before adding others)
-- **MAPE reporting (corrected):** Rolling-origin backtest over 3 windows (last 90 / last 60 / last 30 days). Publish actual MAPE per crop-mandi pair. Do NOT claim a specific number in the pitch — say "X% average across our 4 crops, details in dashboard."
-- **Do NOT run ablations during the hackathon** — default to no rainfall regressor unless Tomato+Warangal shows measurable improvement in first fit.
+
+### API Surface
+
+
+GET  /health
+GET  /api/commodities
+GET  /api/season-data/{commodity}
+GET  /api/insights/{commodity}
+POST /api/recommendation/{commodity}    ← 3 agents + mediator → CommodityInsightSummary
+WS   /ws                                ← streams agent events with 2s stagger
+GET  /api/alerts
+GET  /demo/canned/{commodity}           ← offline pre-computed, zero external calls
+POST /voice/query                       ← Phase 2: WhisperFlow + 3 agents + ElevenLabs
+POST /voice/transcribe                  ← Phase 2: STT only
+
+
+### AI Recommendation Layer
+
+RecommendationCard and RiskPanel are powered by 3 parallel Llama 8B agents that run via asyncio.gather():
+
+- *Season-Optimist* — looks for price-above-MSP seasons, Kharif uptrend signals, highest price year
+- *Season-Pessimist* — looks for price-below-MSP events, declining arrival volumes, glut patterns
+- *Risk Analyst* — MSP floor proximity, Kharif/Rabi coverage risk, sparse-data commodity flags
+
+A Llama 8B *Mediator* synthesizes all three verdicts into the CommodityInsightSummary shape. The mediator output fields must match the TypeScript union types exactly — see the critical field constraints table below.
+
+### WebSocket Event Contract
+
+json
+{"stage":"optimist",  "data":{"verdict":"HOLD",     "confidence":72, "reasoning":"..."}, "ts":"..."}
+{"stage":"pessimist", "data":{"verdict":"LEAN_SELL", "confidence":65, "reasoning":"..."}, "ts":"..."}
+{"stage":"risk",      "data":{"verdict":"WATCH",     "risk_level":"High", "reasoning":"..."}, "ts":"..."}
+{"stage":"mediator",  "data":{"recommendationLabel":"Hold", "confidenceLabel":"Moderate confidence", "recommendationRationale":"...", "conflict_score":"MEDIUM", ...}}
+
+
+The mediator stage data field must include all remaining CommodityInsightSummary fields so the frontend can fully hydrate RecommendationCard and RiskPanel from a single WebSocket connection.
 
 ---
 
-## Offline / Contingency Demo Mode (`backend/fallback/canned_demo.py`)
+## Frontend ↔ Backend Integration Contract
 
-Pre-compute and store 3 full demo responses as JSON at build time:
+lib/api.ts currently delegates all calls to canned functions. When the backend is ready, each function becomes a fetch() call to localhost:8000. The canned path must remain as the ?demo=canned fallback — it is not removed, it is bypassed.
 
-```python
-CANNED_DEMOS = {
-    ("Tomato", "Warangal"): {
-        "forecast_14d": [...],  # real computed values from last successful run
-        "agents": {"optimist": {...}, "pessimist": {...}, "risk": {...}},
-        "mediator": {"decision": "SELL_NEXT_WEEK", "confidence": 74, ...},
-        "profit": {"net_profit": 48000, "incremental_gain": 9200, "line_items": [...]},
-        "voice_te": "నవంబర్ 22న వరంగల్‌లో 40 క్వింటాళ్లు అమ్మండి...",
-        "audio_file": "public/canned/tomato_warangal.mp3",  # pre-generated
-    },
-    # ... Onion/Hyderabad, Chili/Karimnagar
-}
-```
+### Critical field constraints (TypeScript strict mode failures if wrong)
 
-Frontend has a `?demo=canned` query param that switches all API calls to `/demo/canned/{crop}/{mandi}`. Activate this if Railway goes cold or WiFi dies.
-
----
-
-## Critical AGENT_IITH Files to Port to Python
-
-| AGENT_IITH File | Port to | What to preserve |
+| Field | Must be | Must NOT be |
 |---|---|---|
-| `backend/agents/llm.js` | `agents/llm.py` | `extractLastJson` bracket-depth parser, exponential backoff on 429 |
-| `backend/agents/debate.js` | `agents/debate.py` | Only the parallel execution pattern and early convergence check; **remove** source tiers, Kelly, Delphi |
-| `backend/agents/mediator.js` | `agents/mediator.py` | Conflict scoring (HIGH/MEDIUM/LOW) and persona differentiation; replace Kelly with `aggregate_verdicts()` |
-| `backend/server.js` → `runPipeline()` | `routers/analyze.py` | Sequencing: parallel agents → debate → mediator → WebSocket broadcast |
-| `market-intelligence-frontend/src/components/DebateSection.jsx` | `AgentDebate.tsx` | WS state machine, expanding reasoning chains, confidence bars |
-
-**Python asyncio translation:**
-```python
-# 2s stagger (not 50ms) to spread TPM load across 6s window
-results = await asyncio.gather(
-    run_optimist(context),
-    run_pessimist(context, delay=2),
-    run_risk(context, delay=4),
-    return_exceptions=True
-)
-```
+| recommendationLabel | "Lean sell" | "LEAN_SELL", "lean sell", "Lean Sell" |
+| riskLevel | "High" | "HIGH", "high", "RISK_HIGH" |
+| latestDeltaPct | 0.12 (decimal fraction) | 12 (whole percent) |
+| priceTrend | "up" \| "down" \| "flat" | "UP", "rising", "increasing" |
+| seasonAvailability | "Kharif only" | "kharif", "KHARIF_ONLY", "kharif only" |
+| confidenceLabel | "High confidence" | "HIGH_CONFIDENCE", "high", "High" |
 
 ---
 
-## 48-Hour Execution Order
+## Environment Variables
 
-### Hour 0–2: Setup Sprint (all 3 parallel)
+bash
+# frontend/.env.example (committed)
+NEXT_PUBLIC_API_URL=http://localhost:8000
 
-**Member A (Backend):**
-- Configure ElevenLabs account/API key for Telugu voice output — async, continue without
-- Create Railway project, set env vars
-- Run `schema.sql` in Supabase SQL editor
-- Init FastAPI project, `requirements.txt`, deploy ASAP to Railway (verify Prophet installs cleanly — this is a known packaging risk, do it first)
+# backend/.env (to be created by Member A, not committed)
+GROQ_API_KEY=...
+ELEVENLABS_API_KEY=...       # Phase 2 only
+WHISPER_API_KEY=...          # Phase 2 only
 
-**Member B (Data):**
-- **CRITICAL PATH:** Download Agmarknet CSVs — Tomato + Onion + Chili + Turmeric in Telangana, 2022–present
-  - Primary: agmarknet.gov.in/SearchCommodity.aspx
-  - Fallback 1: data.gov.in
-  - Fallback 2: github.com/akhilesh-k/agmarket-price-data
-- Run `agmarknet_ingest.py` immediately
-
-**Member C (Frontend):**
-- Create Next.js 14 on Vercel, configure `NEXT_PUBLIC_API_URL`
-- Scaffold `AgentDebate.tsx` (copy DebateSection.jsx from AGENT_IITH)
-- Wire `VoiceButton.tsx` with MediaRecorder — no backend needed yet
-- Pre-generate 3 canned Telugu audio clips (ElevenLabs or Google TTS if API/quota is unavailable) — **insurance for demo day**
-
-### Milestone: Hour 4 — Smoke Tests
-
-- Railway deploys successfully with Prophet (no packaging failure)
-- Supabase has 5,000+ rows in `price_records`
-- `GET /forecast/Tomato/Warangal` returns a 14-day forecast
-
-If any of these 3 fails, stop and fix before proceeding.
-
-### Hour 4–12: Text-First Demo Path (scope freeze target)
-
-**A:** `llm.py`, `optimist.py`, `pessimist.py`, `risk.py` (Llama 8B), `advisory.py` (single-call voice advisory)
-**B:** First Prophet fit (Tomato/Warangal). `profit/calculator.py`. `ProfitBreakdown.tsx`.
-**C:** `PriceChart.tsx` + `AgentDebate.tsx` consuming real API. `MandiSelector.tsx` with Karimnagar.
-
-**Milestone Hour 12 — TEXT-ONLY DEMO WORKS:**
-- `POST /analyze` returns 4 agent results via REST (not WS yet)
-- Frontend shows agent cards + profit breakdown with real data
-- FREEZE SCOPE HERE if behind schedule. Do not add features until this is solid.
-
-### Hour 12–20: Real-Time + Voice
-
-**A:** `debate.py` (deterministic aggregation), `mediator.py` (Qwen3-32B), WebSocket broadcast
-**B:** Connect `AgentDebate.tsx` to WebSocket. Animate agent cards appearing sequentially.
-**C:** Voice pipeline on CLI: Whisper → Llama 8B advisory → ElevenLabs TTS
-
-Milestone Hour 20: Voice loop closes end-to-end, even if ugly.
-
-### Hour 20–24: Integration
-
-Members A + B pair for 3 hours — real API meets real frontend.
-C: wire `VoiceButton.tsx` → `/voice/query` → `<audio>` playback.
-
-**Hour 24 DRY RUN:** Full demo path, text + voice. Will have bugs. Fix the critical ones only.
-
-### Hour 24–32: Second-tier + Polish
-
-**A:** `weather.py`, refit Tomato Prophet with rainfall; `alerts/sms.py` (verify Twilio to pre-registered number)
-**B:** FPO dashboard (`ChoroplethMap.tsx`); visual polish — chart draw-in, receipt animation
-**C:** Twilio cron; seed "3 days ago" alert; build `canned_demo.py` with real computed values
-
-### Hour 32–40: Bug bash + Rehearsal
-
-All three walk every demo path. Member C: first timed 3-min rehearsal.
-**A:** Redis caching + graceful degradation (Prophet fails → 7-day rolling average)
-**B:** Micro-interactions, mobile-first polish
-
-### Hour 40–46: Pitch mastery
-
-6+ full rehearsals. Record backup video. Q&A cards drilled cold.
-Pre-coordinate judge's phone for Twilio SMS moment (Twilio trial requires pre-verified numbers).
-Activate `?demo=canned` and verify it works without any network calls.
-
-### Hour 46–48: Sleep.
 
 ---
 
-## Feature Cut Priority
+## Explicit Non-Goals for Current Phase
 
-| Priority | Feature | Cut threshold |
-|---|---|---|
-| P0 Never cut | Prophet forecast + confidence bands | — |
-| P0 Never cut | 4-agent debate + mediator (text output) | — |
-| P0 Never cut | Agmarknet data displayed | — |
-| P0 Never cut | Profit calculator (line items) | — |
-| P1 Cut if fails | Telugu voice (STT + TTS) | If audio broken → show text in Telugu only |
-| P1 Cut if fails | WebSocket streaming | If Railway WS blocks → REST polling (already in `websocket.ts`) |
-| P1 Cut if fails | Twilio SMS | If Twilio trial limits or unverified number → screenshot fallback |
-| P2 Cut at Hour 30 | FPO choropleth | If behind schedule |
-| P3 Drop freely | Open-Meteo rainfall regressor | Default: no regressor |
-| P3 Drop freely | OpenRouteService | Hardcoded distance table is primary |
-| P4 Drop freely | Upstash Redis | In-memory dict fallback already in `model_cache.py` |
+Do *not* build the following until a new dataset adds date-granular or mandi-level data:
 
-**Hardcoded distance table (primary for profit calc):**
-```python
-MANDI_DISTANCES_KM = {
-    ("Warangal", "Warangal"): 5,    ("Warangal", "Hyderabad"): 150,
-    ("Nalgonda", "Hyderabad"): 80,  ("Nalgonda", "Warangal"): 90,
-    ("Nizamabad", "Nizamabad"): 5,  ("Nizamabad", "Hyderabad"): 175,
-    ("Karimnagar", "Karimnagar"): 5, ("Karimnagar", "Hyderabad"): 165,
-    ("Karimnagar", "Warangal"): 70, ("Hyderabad", "Hyderabad"): 5,
-}
-```
+- mandi or district filtering
+- arrival_date time series
+- Daily price forecasting (Prophet or otherwise)
+- Transport-cost profit estimation
+- Twilio SMS alerts
+- ChoroplethMap / geospatial views
+- Telugu language output
+
+These are a later phase, contingent on new data.
 
 ---
 
-## Verification Checklist
+## Phase 2 — Voice Pipeline (Planned, Not Started)
 
-Run in order before demo. Do NOT skip.
+Activated only after the backend AI recommendation layer is stable and all integration contracts are passing.
 
-```sql
--- Step 1: Data integrity
-SELECT commodity, mandi, COUNT(*), MIN(arrival_date), MAX(arrival_date),
-       SUM(CASE WHEN is_anomaly THEN 1 ELSE 0 END) as anomalies
-FROM price_records GROUP BY commodity, mandi ORDER BY commodity, mandi;
--- Expect: 20 rows (4 crops × 5 mandis), each 300+ records
--- Karimnagar should appear (not Kurnool)
-```
+*Planned stack:*
 
-```bash
-# Step 2: Prophet + MAPE
-curl http://localhost:8000/forecast/Tomato/Warangal
-# Expect: HTTP 200, 14-day forecast, mape_rolling present (accept any value — do not claim specific %)
 
-# Step 3: Text-path debate (no WS needed)
-curl -X POST http://localhost:8000/analyze \
-  -H "Content-Type: application/json" \
-  -d '{"crop":"Tomato","mandi":"Warangal","quantity_qtl":50,"persona":"medium_farmer"}'
-# Expect: run_id. Then via WS within 15s: optimist, pessimist, risk, mediator events
+Browser MediaRecorder  (WAV blob, multipart/form-data POST)
+  ↓
+WhisperFlow STT        language="te" · ~0.8s · fallback: Groq Whisper Large v3
+  ↓
+3× Llama 8B Parallel   Season-Optimist + Season-Pessimist + Risk Analyst · ~1.4s
+  ↓
+Llama 8B Synthesizer   merges 3 verdicts → Telugu advisory paragraph · ~0.7s
+  ↓
+ElevenLabs Multilingual v2 TTS   Telugu text → audio_base64 · 5s timeout · ~0.9s
 
-# Step 4: Voice round-trip
-curl -X POST http://localhost:8000/voice/query \
-  -F "audio=@test_telugu.wav" -F "crop=Tomato" -F "mandi=Warangal" -F "persona=small_farmer"
-# Expect within 7s: text_response_te (Telugu text), audio_base64_te
-# Play audio. If ElevenLabs is unavailable: text_response_te must still be present
+Target: <3s text response · <7s with audio
 
-# Step 5: Profit
-curl -X POST http://localhost:8000/profit/calculate \
-  -d '{"run_id":"<from step 3>","quantity_qtl":50,"farm_km_to_mandi":45}'
-# Expect: 5+ line items, incremental_gain present
 
-# Step 6: Canned demo
-curl http://localhost:8000/demo/canned/Tomato/Warangal
-# Expect: full pre-computed response, no external API calls triggered
+*Key decisions locked for Phase 2:*
+- ElevenLabs replaces Bhashini (no 24h registration) and AI4Bharat (no 300MB local model)
+- 3 parallel agents mirror the dashboard debate — same architecture, not a shortcut
+- VoiceButton.tsx shell already exists; wire to /voice/query when ready
+- Pre-generate 3 Telugu fallback audio clips at Phase 2 Hour 0 before writing any code
 
-# Step 7: SMS (pre-verified number only)
-curl -X POST http://localhost:8000/alerts/sms/send
-# Verify in Twilio console dashboard
+*Backend endpoint:*
 
-# Step 8: WS resilience
-# Kill Railway → frontend shows "Reconnecting..." → switches to REST polling → data still shows
-```
+POST /voice/query
+  accepts: multipart/form-data, field "audio" (WAV blob)
+  returns: {
+    "text_response_te": "...",
+    "audio_base64": "..." | null,
+    "commodity_detected": "Cotton"
+  }
+
+
+Text response is always returned. audio_base64 is nullable — VoiceButton.tsx handles both states.
 
 ---
 
-## Requirements (`backend/requirements.txt`)
+## Success Criteria
 
-```
-fastapi==0.115.0
-uvicorn[standard]==0.30.0
-websockets==12.0
-python-multipart==0.0.9
-httpx==0.27.0
-pydantic-settings==2.0.0
-supabase==2.5.0
-redis==5.0.4
-prophet==1.1.5
-pandas==2.2.2
-scikit-learn==1.4.0
-groq==0.9.0
-twilio==9.2.0
-python-dotenv==1.0.0
-numpy==1.26.4
-```
+### Phase 1 — Complete when all of the following are true:
 
-**Hour 4 packaging test (Railway):** Deploy a minimal `main.py` that imports `from prophet import Prophet` and returns `GET /health → 200`. If this fails, switch to `neuralprophet` or `statsmodels.tsa.holtwinters.ExponentialSmoothing` as Prophet fallback.
+1. season_report_summary.json is clean and all 14 commodities are verified ✅
+2. Dashboard filters by commodity group and commodity ✅
+3. Charts and MSP comparison render across all 4 seasons ✅
+4. RecommendationCard shows real AI verdicts from backend — not canned data ⏳
+5. WebSocket streams 4 agent cards sequentially to the dashboard ⏳
+6. /demo/canned/{commodity} returns correct pre-computed data with zero external API calls ⏳
+7. No TypeScript errors in lib/api.ts after backend integration swap ⏳
+
+### Phase 2 — Complete when all of the following are true:
+
+1. Telugu voice query returns Telugu text within 3 seconds
+2. ElevenLabs audio plays within 7 seconds, or text-only fallback works silently
+3. VoiceButton.tsx handles mic permission denial, no-mic devices, and network errors without crashing
+
+---
+
+## Data Mode Contract
+
+All API responses and the top-level DashboardSummary include dataMode: "seasonal_commodity". This field exists so the app can later support a mandi_daily mode without redesigning the data layer. Do not hardcode assumptions that only seasonal data will ever exist.
+
+---
+
+KrishiCFO · project.md · v4.0 · front_data branch · Last updated April 17, 2026

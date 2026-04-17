@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { TopNav } from "../components/TopNav";
-import {
-  formatCurrency,
-  getDashboardSummary,
-  getCommodityDetailModel,
-} from "../lib/canned-data";
+import { fetchDashboardSummary } from "../lib/api";
+import { formatCurrency } from "../lib/canned-data";
 
-export default function HomePage() {
-  const summary = getDashboardSummary();
-  const spotlight =
-    summary.spotlight ? getCommodityDetailModel(summary.spotlight.slug) : null;
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const summary = await fetchDashboardSummary();
+  const spotlight = summary.spotlight;
 
   return (
     <main className="page-shell home-page">
@@ -29,8 +27,8 @@ export default function HomePage() {
             <Link className="primary-button" href="/dashboard">
               Open dashboard
             </Link>
-            {summary.spotlight ? (
-              <Link className="secondary-button" href={`/commodity/${summary.spotlight.slug}`}>
+            {spotlight ? (
+              <Link className="secondary-button" href={`/commodity/${spotlight.slug}`}>
                 View spotlight commodity
               </Link>
             ) : null}
@@ -55,11 +53,11 @@ export default function HomePage() {
             </div>
             <div className="metric-card">
               <span className="metric-label">Spotlight price</span>
-              <strong>{formatCurrency(spotlight?.insights.latestReferencePrice ?? null)}</strong>
+              <strong>{formatCurrency(spotlight?.latestReferencePrice ?? null)}</strong>
             </div>
             <div className="metric-card">
               <span className="metric-label">Risk posture</span>
-              <strong>{spotlight?.insights.riskLevel ?? "Watch"}</strong>
+              <strong>{spotlight?.riskLevel ?? "Watch"}</strong>
             </div>
           </div>
         </div>

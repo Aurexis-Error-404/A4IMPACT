@@ -1207,6 +1207,81 @@ table {
   }
 }
 
+/* ── Dashboard loading state ── */
+.dash-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-height: 320px;
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+}
+.dash-loading.inline { min-height: 160px; }
+.dash-loading-spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid rgba(239, 159, 39, 0.15);
+  border-top-color: var(--gold);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── RecommendationCard loading skeleton ── */
+.rec-card--loading { pointer-events: none; }
+.rec-thinking {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 22px;
+}
+.rec-thinking-dots { display: flex; gap: 6px; }
+.rec-thinking-dots span {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(127, 119, 221, 0.7);
+  animation: thinking-pulse 1.4s ease-in-out infinite;
+}
+.rec-thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.rec-thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes thinking-pulse {
+  0%, 80%, 100% { opacity: 0.25; transform: scale(0.85); }
+  40%           { opacity: 1;    transform: scale(1.1);  }
+}
+.rec-thinking-text {
+  color: rgba(127, 119, 221, 0.85);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.rec-skeleton {
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  margin-bottom: 12px;
+}
+.rec-skeleton--headline { height: 28px; width: 55%; }
+.rec-skeleton--badge    { height: 22px; width: 38%; border-radius: 999px; }
+.rec-skeleton--body     { height: 14px; width: 100%; }
+.rec-skeleton--short    { width: 72%; }
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 @media (max-width: 760px) {
   .page-shell {
     padding: 20px 16px;

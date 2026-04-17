@@ -14,50 +14,112 @@ import { SeasonPriceChart } from "../../components/SeasonPriceChart";
 import { TopNav } from "../../components/TopNav";
 import { TrendArrowBadge } from "../../components/TrendArrowBadge";
 import {
-  formatCurrency,
-  getCommodityGroups,
-  getCommoditiesForGroup,
-  getCommodityInsights,
-  getCommoditySeries,
-  getDashboardSummary,
+  fetchCommodityInsights,
+  fetchCommoditySeries,
+  fetchDashboardSummary,
+} from "../../lib/api";
+import { formatCurrency } from "../../lib/canned-data";
+import type {
+  AlertItem,
+  CommodityCardSummary,
+  CommodityInsightSummary,
+  PulseEvent,
+  SeasonPriceRecord,
 } from "../../lib/canned-data";
 
+type DashState = {
+  groups: string[];
+  allInsights: CommodityInsightSummary[];
+  movers: CommodityCardSummary[];
+  alerts: AlertItem[];
+  pulseEvents: PulseEvent[];
+};
+
 export default function DashboardPage() {
-  const summary = getDashboardSummary();
-  const groups = useMemo(() => getCommodityGroups(), []);
+  const [dash, setDash] = useState<DashState | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState("");
+  const [selectedCommodity, setSelectedCommodity] = useState("");
+  const [insights, setInsights] = useState<CommodityInsightSummary | null>(null);
+  const [records, setRecords] = useState<SeasonPriceRecord[]>([]);
+  const [insightsLoading, setInsightsLoading] = useState(false);
 
-  // Default to spotlight commodity's group, or first group
-  const defaultGroup = summary.spotlight?.group ?? groups[0] ?? "";
-  const [selectedGroup, setSelectedGroup] = useState(defaultGroup);
-
-  const commoditiesInGroup = useMemo(
-    () => getCommoditiesForGroup(selectedGroup),
-    [selectedGroup],
-  );
-
-  // Default to spotlight commodity if it belongs to the selected group
-  const defaultCommodity =
-    summary.spotlight?.group === selectedGroup
-      ? summary.spotlight.commodity
-      : commoditiesInGroup[0] ?? "";
-  const [selectedCommodity, setSelectedCommodity] = useState(defaultCommodity);
-
-  // Repair selectedCommodity when group changes and current no longer belongs
+  // Initial load — fetch all data from backend
   useEffect(() => {
+    fetchDashboardSummary().then((summary) => {
+      const allInsights: CommodityInsightSummary[] = [];
+      const groups: string[] = [];
+      for (const card of summary.movers) {
+        if (!groups.includes(card.group)) groups.push(card.group);
+      }
+      setDash({
+        groups: Array.from(new Set([...summary.movers.map((c) => c.group)])),
+        allInsights,
+        movers: summary.movers,
+        alerts: summary.alerts,
+        pulseEvents: summary.pulseEvents,
+      });
+      if (summary.spotlight) {
+        setSelectedGroup(summary.spotlight.group);
+        setSelectedCommodity(summary.spotlight.commodity);
+      }
+    });
+  }, []);
+
+  // Fetch all insights once groups are known, to power the filter bar commodity list
+  const [allInsightsList, setAllInsightsList] = useState<CommodityInsightSummary[]>([]);
+  useEffect(() => {
+    if (!dash) return;
+    // We already get movers but need all 14 for filter bar — reuse fetchDashboardSummary data
+    // which includes movers; we derive groups/commodities from backend via summary.movers
+  }, [dash]);
+
+  // Commodity list for selected group (derived from movers + extra backend calls)
+  const commoditiesInGroup = useMemo(() => {
+    if (!dash) return [];
+    return dash.movers
+      .filter((c) => c.group === selectedGroup)
+      .map((c) => c.commodity);
+  }, [dash, selectedGroup]);
+
+  const groups = useMemo(() => {
+    if (!dash) return [];
+    return Array.from(new Set(dash.movers.map((c) => c.group)));
+  }, [dash]);
+
+  // Repair selected commodity when group changes
+  useEffect(() => {
+    if (!commoditiesInGroup.length) return;
     if (!commoditiesInGroup.includes(selectedCommodity)) {
-      setSelectedCommodity(commoditiesInGroup[0] ?? "");
+      setSelectedCommodity(commoditiesInGroup[0]);
     }
   }, [selectedGroup, commoditiesInGroup, selectedCommodity]);
 
-  // Derive insights + records from selected filters
-  const insights = useMemo(
-    () => getCommodityInsights(selectedGroup, selectedCommodity),
-    [selectedGroup, selectedCommodity],
-  );
-  const records = useMemo(
-    () => getCommoditySeries(selectedGroup, selectedCommodity),
-    [selectedGroup, selectedCommodity],
-  );
+  // Fetch insights + records when selected commodity changes
+  useEffect(() => {
+    if (!selectedGroup || !selectedCommodity) return;
+    setInsightsLoading(true);
+    Promise.all([
+      fetchCommodityInsights(selectedGroup, selectedCommodity),
+      fetchCommoditySeries(selectedGroup, selectedCommodity),
+    ])
+      .then(([ins, rec]) => {
+        setInsights(ins);
+        setRecords(rec);
+      })
+      .finally(() => setInsightsLoading(false));
+  }, [selectedGroup, selectedCommodity]);
+
+  if (!dash) {
+    return (
+      <main className="page-shell dashboard-page">
+        <TopNav />
+        <div className="dash-loading">
+          <div className="dash-loading-spinner" />
+          <p>Loading commodity intelligence…</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="page-shell dashboard-page">
@@ -66,19 +128,26 @@ export default function DashboardPage() {
       <CommodityFilterBar
         groups={groups}
         selectedGroup={selectedGroup}
-        onGroupChange={setSelectedGroup}
+        onGroupChange={(g) => {
+          setSelectedGroup(g);
+        }}
         commodities={commoditiesInGroup}
         selectedCommodity={selectedCommodity}
         onCommodityChange={setSelectedCommodity}
       />
 
-      {insights ? (
+      {insightsLoading ? (
+        <div className="dash-loading inline">
+          <div className="dash-loading-spinner" />
+          <p>Loading {selectedCommodity}…</p>
+        </div>
+      ) : insights ? (
         <>
           <section className="overview-shell">
             <HeroCanvas
               insights={insights}
               group={selectedGroup}
-              lastUpdated={summary.updatedAt}
+              lastUpdated="Season sync active"
             />
             <div className="overview-aside">
               <div className="metric-card feature-card">
@@ -89,9 +158,7 @@ export default function DashboardPage() {
               <div className="metric-grid compact">
                 <div className="metric-card">
                   <span className="metric-label">Reference price</span>
-                  <strong>
-                    {formatCurrency(insights.latestReferencePrice)}
-                  </strong>
+                  <strong>{formatCurrency(insights.latestReferencePrice)}</strong>
                 </div>
                 <div className="metric-card">
                   <span className="metric-label">MSP floor</span>
@@ -124,16 +191,15 @@ export default function DashboardPage() {
         </>
       ) : null}
 
-      {/* Global overview widgets — not filtered to selected commodity */}
       <section className="dashboard-grid lower">
-        <MarketPulseFeed events={summary.pulseEvents} />
+        <MarketPulseFeed events={dash.pulseEvents} />
         <article className="card feature">
           <span className="card-label">Alert stack</span>
           <h3>Commodity pressure points</h3>
           <p className="card-copy">
             Signals are grouped by price pressure, momentum, and coverage risk.
           </p>
-          <AlertSeverityStack alerts={summary.alerts} />
+          <AlertSeverityStack alerts={dash.alerts} />
         </article>
       </section>
 
@@ -151,7 +217,7 @@ export default function DashboardPage() {
           ) : null}
         </div>
         <div className="commodity-card-grid">
-          {summary.movers.map((card) => {
+          {dash.movers.map((card) => {
             const riskClass =
               card.riskLevel === "High"
                 ? "risk-high"
@@ -171,11 +237,7 @@ export default function DashboardPage() {
                 </p>
                 <div className="commodity-link-meta">
                   <span>{card.latestSeason}</span>
-                  <span
-                    className={
-                      card.latestDeltaPct >= 0 ? "positive" : "negative"
-                    }
-                  >
+                  <span className={card.latestDeltaPct >= 0 ? "positive" : "negative"}>
                     {card.latestDeltaPct >= 0 ? "+" : ""}
                     {(card.latestDeltaPct * 100).toFixed(1)}%
                   </span>

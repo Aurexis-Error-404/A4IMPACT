@@ -3,26 +3,23 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { CommodityFilterBar } from "./CommodityFilterBar";
-import {
-  getCommodityGroups,
-  getCommoditiesForGroup,
-  getAllCommodityCards,
-} from "../lib/canned-data";
+import { slugify } from "../lib/canned-data";
 
-export function CommodityDetailNav({
-  currentGroup,
-  currentCommodity,
-}: {
+type Pair = { group: string; commodity: string; slug: string };
+
+type Props = {
   currentGroup: string;
   currentCommodity: string;
-}) {
+  groups: string[];
+  pairs: Pair[];
+};
+
+export function CommodityDetailNav({ currentGroup, currentCommodity, groups, pairs }: Props) {
   const router = useRouter();
-  const groups = useMemo(() => getCommodityGroups(), []);
-  const allCards = useMemo(() => getAllCommodityCards(), []);
 
   const commoditiesInGroup = useMemo(
-    () => getCommoditiesForGroup(currentGroup),
-    [currentGroup]
+    () => pairs.filter((p) => p.group === currentGroup).map((p) => p.commodity),
+    [pairs, currentGroup],
   );
 
   return (
@@ -30,19 +27,16 @@ export function CommodityDetailNav({
       groups={groups}
       selectedGroup={currentGroup}
       onGroupChange={(group) => {
-        // Navigate to the first commodity inside the new group
-        const groupCards = allCards.filter((c) => c.group === group);
-        if (groupCards.length > 0) {
-          router.push(`/commodity/${groupCards[0].slug}`);
-        }
+        const first = pairs.find((p) => p.group === group);
+        if (first) router.push(`/commodity/${first.slug}`);
       }}
       commodities={commoditiesInGroup}
       selectedCommodity={currentCommodity}
       onCommodityChange={(commodity) => {
-        const card = allCards.find((c) => c.commodity === commodity);
-        if (card) {
-          router.push(`/commodity/${card.slug}`);
-        }
+        const match = pairs.find(
+          (p) => p.group === currentGroup && p.commodity === commodity,
+        );
+        if (match) router.push(`/commodity/${match.slug}`);
       }}
     />
   );

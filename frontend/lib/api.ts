@@ -183,3 +183,35 @@ export async function fetchAlerts(limit = 6): Promise<AlertItem[]> {
   const alerts = await get<AlertItem[]>("/api/alerts");
   return alerts.slice(0, limit);
 }
+
+// Granular helpers used by individual pages
+export async function fetchAllCommodityPairs(): Promise<{ group: string; commodity: string; slug: string }[]> {
+  const pairs = await allCommodityPairs();
+  return pairs.map((p) => ({ ...p, slug: commoditySlug(p.group, p.commodity) }));
+}
+
+export async function fetchCommodityGroups(): Promise<string[]> {
+  return get<string[]>("/api/commodity-groups");
+}
+
+export async function fetchCommoditiesForGroup(group: string): Promise<string[]> {
+  return get<string[]>(`/api/commodities?group=${encodeURIComponent(group)}`);
+}
+
+export async function fetchCommodityInsights(group: string, commodity: string): Promise<CommodityInsightSummary> {
+  return get<CommodityInsightSummary>(
+    `/api/commodity-insights?group=${encodeURIComponent(group)}&commodity=${encodeURIComponent(commodity)}`,
+  );
+}
+
+export async function fetchCommoditySeries(group: string, commodity: string): Promise<SeasonPriceRecord[]> {
+  return get<SeasonPriceRecord[]>(
+    `/api/commodity-series?group=${encodeURIComponent(group)}&commodity=${encodeURIComponent(commodity)}`,
+  );
+}
+
+export async function fetchAIRecommendation(commodity: string): Promise<CommodityInsightSummary> {
+  return post<CommodityInsightSummary>(`/api/recommendation/${encodeURIComponent(commodity)}`);
+}
+
+export { commoditySlug };

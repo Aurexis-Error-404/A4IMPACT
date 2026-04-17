@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlertSeverityStack } from "../../../components/AlertSeverityStack";
+import { AIRecommendationSection } from "../../../components/AIRecommendationSection";
 import { HeroCanvas } from "../../../components/HeroCanvas";
 import { MSPComparisonRail } from "../../../components/MSPComparisonCard";
-import { RecommendationCard } from "../../../components/RecommendationCard";
 import { RiskPanel } from "../../../components/RiskPanel";
 import { SeasonArrivalChart } from "../../../components/SeasonArrivalChart";
 import { SeasonAvailabilityBand } from "../../../components/SeasonAvailabilityBand";
@@ -12,34 +12,45 @@ import { SeasonalComparisonPanel } from "../../../components/SeasonalComparisonP
 import { CommoditySummaryTable } from "../../../components/CommoditySummaryTable";
 import { TopNav } from "../../../components/TopNav";
 import { CommodityDetailNav } from "../../../components/CommodityDetailNav";
-import { fetchCommoditySlugs } from "../../../lib/api";
-import { getCommodityDetailModel } from "../../../lib/canned-data";
+import {
+  fetchAllCommodityPairs,
+  fetchCommodityInsights,
+  fetchCommoditySeries,
+  fetchAlerts,
+} from "../../../lib/api";
 
-type Params = {
-  slug: string;
-};
+export const dynamic = "force-dynamic";
 
-export async function generateStaticParams() {
-  return fetchCommoditySlugs();
-}
+type Params = { slug: string };
 
-export default function CommodityDetailPage({
-  params,
-}: {
-  params: Params;
-}) {
-  const detail = getCommodityDetailModel(params.slug);
-  if (!detail) {
-    notFound();
-  }
+export default async function CommodityDetailPage({ params }: { params: Params }) {
+  const pairs = await fetchAllCommodityPairs();
+  const match = pairs.find((p) => p.slug === params.slug);
+  if (!match) notFound();
+
+  const { group, commodity } = match;
+
+  const [records, insights, allAlerts] = await Promise.all([
+    fetchCommoditySeries(group, commodity),
+    fetchCommodityInsights(group, commodity),
+    fetchAlerts(30),
+  ]);
+
+  const relatedAlerts = allAlerts.filter(
+    (a) => a.group === group && a.commodity === commodity,
+  );
+
+  const groups = Array.from(new Set(pairs.map((p) => p.group)));
 
   return (
     <main className="page-shell detail-page">
-      <TopNav activeCommodityLabel={detail.commodity} />
+      <TopNav activeCommodityLabel={commodity} />
 
-      <CommodityDetailNav 
-        currentGroup={detail.group} 
-        currentCommodity={detail.commodity} 
+      <CommodityDetailNav
+        currentGroup={group}
+        currentCommodity={commodity}
+        groups={groups}
+        pairs={pairs}
       />
 
       <div className="detail-backlink">
@@ -47,29 +58,27 @@ export default function CommodityDetailPage({
       </div>
 
       <HeroCanvas
-        insights={detail.insights}
-        group={detail.group}
-        lastUpdated={`Season ${detail.insights.latestSeason}`}
+        insights={insights}
+        group={group}
+        lastUpdated={`Season ${insights.latestSeason}`}
       />
 
-      <MSPComparisonRail insights={detail.insights} />
+      <MSPComparisonRail insights={insights} />
 
       <section className="dashboard-grid">
         <div className="chart-stack">
-          <SeasonPriceChart records={detail.records} />
-          <SeasonArrivalChart records={detail.records} />
+          <SeasonPriceChart records={records} />
+          <SeasonArrivalChart records={records} />
         </div>
         <div className="side-stack">
-          <RecommendationCard insights={detail.insights} />
-          <RiskPanel insights={detail.insights} />
+          {/* AI recommendation loads independently with a spinner */}
+          <AIRecommendationSection commodity={commodity} basicInsights={insights} />
+          <RiskPanel insights={insights} />
         </div>
       </section>
 
       <section className="dashboard-grid lower">
-        <SeasonalComparisonPanel
-          records={detail.records}
-          insights={detail.insights}
-        />
+        <SeasonalComparisonPanel records={records} insights={insights} />
         <div className="side-stack">
           <div className="card feature">
             <span className="card-label">Season mode</span>
@@ -78,7 +87,7 @@ export default function CommodityDetailPage({
               This view stays honest about whether the commodity is represented in
               Kharif, Rabi, or both.
             </p>
-            <SeasonAvailabilityBand availability={detail.insights.seasonAvailability} />
+            <SeasonAvailabilityBand availability={insights.seasonAvailability} />
           </div>
           <article className="card">
             <span className="card-label">Alerts</span>
@@ -86,12 +95,12 @@ export default function CommodityDetailPage({
             <p className="card-copy">
               These alerts are filtered to the selected commodity only.
             </p>
-            <AlertSeverityStack alerts={detail.alerts} />
+            <AlertSeverityStack alerts={relatedAlerts} />
           </article>
         </div>
       </section>
 
-      <CommoditySummaryTable records={detail.records} />
+      <CommoditySummaryTable records={records} />
     </main>
   );
 }

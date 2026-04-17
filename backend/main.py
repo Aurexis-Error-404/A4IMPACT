@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from config import Settings
 from data.loader import load
-from routers import health
+from routers import health, commodities, series, insights
 
 settings = Settings()
 
@@ -44,3 +44,6 @@ async def generic_handler(request: Request, exc: Exception):
 
 
 app.include_router(health.router)
+app.include_router(commodities.router)
+app.include_router(series.router)
+app.include_router(insights.router)

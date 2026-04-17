@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query, Request
 
+from data.models import CommodityPair
+
 router = APIRouter(prefix="/api")
 
 
@@ -20,3 +22,14 @@ async def list_commodities(
             detail={"error": "group_not_found", "group": group, "available": store.groups},
         )
     return store.commodities_by_group[group]
+
+
+@router.get("/commodity-pairs", response_model=list[CommodityPair])
+async def list_pairs(request: Request) -> list[dict]:
+    """All (group, commodity) pairs in one request — replaces the 1+N group fetch fan-out."""
+    store = request.app.state.store
+    return [
+        {"group": group, "commodity": commodity}
+        for group in store.groups
+        for commodity in store.commodities_by_group.get(group, [])
+    ]

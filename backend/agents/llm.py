@@ -55,7 +55,7 @@ async def call_llm(
                 model=model,
                 messages=messages,
                 temperature=0.3,
-                max_tokens=1024,
+                max_tokens=2048,
             )
             return resp.choices[0].message.content or ""
         except Exception as exc:

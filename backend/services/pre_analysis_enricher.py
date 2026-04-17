@@ -1,4 +1,5 @@
 from __future__ import annotations
+from statistics import mean, stdev
 
 
 def _ref_price(r: dict) -> float | None:
@@ -127,6 +128,35 @@ def enrich(records: list[dict]) -> dict:
             elif diff > 0.05:
                 floor_proximity_trend = "moving_away_from_floor"
 
+    # ── MSP hit rate ─────────────────────────────────────────────────────────
+    # Fraction of priced seasons where reference price >= MSP.
+    above_msp = sum(
+        1 for r in priced
+        if r.get("msp") and _ref_price(r) is not None and _ref_price(r) >= r["msp"]  # type: ignore[operator]
+    )
+    msp_hit_rate = round(above_msp / len(priced), 3) if priced else 0.0
+
+    # ── Price volatility ──────────────────────────────────────────────────────
+    # Std dev of (price/MSP - 1) — high value means unreliable price swings.
+    vol_deltas = [
+        (_ref_price(r) / r["msp"]) - 1  # type: ignore[operator]
+        for r in priced if r.get("msp") and r["msp"] > 0 and _ref_price(r) is not None
+    ]
+    price_volatility = round(stdev(vol_deltas), 4) if len(vol_deltas) >= 2 else 0.0
+
+    # ── Recent momentum ───────────────────────────────────────────────────────
+    # Compare avg (price/MSP - 1) of last 2 seasons vs all prior seasons.
+    recent_momentum = "stable"
+    if len(priced) >= 3:
+        def _dm(r: dict) -> float:
+            p, m = _ref_price(r), r.get("msp")
+            return (p / m) - 1 if p is not None and m and m > 0 else 0.0  # type: ignore[operator]
+
+        recent_avg = mean(_dm(r) for r in priced[-2:])
+        prior_avg  = mean(_dm(r) for r in priced[:-2])
+        diff = recent_avg - prior_avg
+        recent_momentum = "improving" if diff > 0.03 else "declining" if diff < -0.03 else "stable"
+
     return {
         "data_confidence": data_confidence,
         "anomaly_flags": anomaly_flags,
@@ -137,4 +167,7 @@ def enrich(records: list[dict]) -> dict:
         "arrival_velocity": arrival_velocity,
         "arrival_collapse_pct": arrival_collapse_pct,
         "floor_proximity_trend": floor_proximity_trend,
+        "msp_hit_rate": msp_hit_rate,
+        "price_volatility": price_volatility,
+        "recent_momentum": recent_momentum,
     }

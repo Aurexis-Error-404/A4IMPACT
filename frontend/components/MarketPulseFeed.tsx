@@ -1,18 +1,20 @@
 "use client";
 
 import { PulseEvent } from "../lib/canned-data";
+import { useTranslations } from "next-intl";
 
 type Props = {
   events: PulseEvent[];
 };
 
 export function MarketPulseFeed({ events }: Props) {
+  const t = useTranslations("pulse");
   return (
     <article className="card">
-      <span className="card-label">Market pulse</span>
-      <h3>Largest MSP deviations</h3>
+      <span className="card-label">{t("pulseLabel")}</span>
+      <h3>{t("deviationsTitle")}</h3>
       <p className="card-copy">
-        Commodities ranked by how far their latest reference price sits from MSP.
+        {t("deviationsDesc")}
       </p>
       <div className="pulse-feed stagger">
         {events.map((event) => (

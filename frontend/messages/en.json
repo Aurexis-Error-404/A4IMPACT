@@ -74,5 +74,64 @@
     "atCeiling": "Profit at price ceiling",
     "stagingAdvice": "Staging advice",
     "na": "N/A"
+  },
+  "dashboard": {
+    "loading": "Loading commodity intelligence…",
+    "loadingCommodity": "Loading {commodity}…",
+    "spotlight": "Spotlight recommendation",
+    "referencePrice": "Reference price",
+    "mspFloor": "MSP floor",
+    "trend": "Trend",
+    "coverage": "Coverage",
+    "pressurePointsTitle": "Commodity pressure points",
+    "pressurePointsDesc": "Signals are grouped by price pressure, momentum, and coverage risk.",
+    "routesKicker": "Commodity routes",
+    "routesTitle": "Open a dedicated commodity detail page."
+  },
+  "mspComparison": {
+    "mspFloor": "MSP floor",
+    "referencePrice": "Reference price",
+    "rabiBasis": "Rabi basis",
+    "kharifBasis": "Kharif basis",
+    "deviation": "Deviation",
+    "aboveMsp": "above MSP",
+    "belowMsp": "below MSP",
+    "atMsp": "at MSP",
+    "gauge": "Gauge"
+  },
+  "charts": {
+    "priceView": "Season price view",
+    "priceTrajectoryTitle": "Price trajectory across seasons",
+    "priceTrajectoryDesc": "MSP, Kharif, and Rabi reference prices charted together so the spread is visible at a glance.",
+    "noPriceData": "No priced seasons available for this commodity.",
+    "msp": "MSP",
+    "kharifPrice": "Kharif price",
+    "rabiPrice": "Rabi price",
+    "arrivalView": "Season arrival view",
+    "arrivalTitle": "Kharif and Rabi arrivals",
+    "arrivalDesc": "Arrival volume per season, scaled against the peak observed value.",
+    "kharifArrival": "Kharif arrival",
+    "rabiArrival": "Rabi arrival"
+  },
+  "pulse": {
+    "pulseLabel": "Market pulse",
+    "deviationsTitle": "Largest MSP deviations",
+    "deviationsDesc": "Commodities ranked by how far their latest reference price sits from MSP."
+  },
+  "seasonalComparison": {
+    "label": "Seasonal comparison",
+    "title": "Kharif vs Rabi mix",
+    "desc": "Coverage split and arrival intensity across observed seasons."
+  },
+  "summaryTable": {
+    "label": "Detailed view",
+    "title": "Season-by-season breakdown",
+    "desc": "Exact values across MSP, price, and arrivals for every observed season.",
+    "season": "Season",
+    "msp": "MSP",
+    "kharifPrice": "Kharif price",
+    "kharifArrival": "Kharif arrival",
+    "rabiPrice": "Rabi price",
+    "rabiArrival": "Rabi arrival"
   }
 }

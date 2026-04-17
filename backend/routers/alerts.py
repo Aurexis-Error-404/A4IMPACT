@@ -41,8 +41,8 @@ def _build_alerts(store) -> list[dict]:
                 if latest_price and msp else insight["latestDeltaLabel"]
             )
         else:
-            headline = f"{commodity} near MSP — monitor price movement"
-            detail   = f"Price Rs.{latest_price:,.0f} vs MSP Rs.{msp:,.0f} in {season}"
+            headline = f"{commodity} within 5% of MSP — consider partial sell to lock in gains"
+            detail   = f"Price Rs.{latest_price:,.0f} vs MSP Rs.{msp:,.0f} in {season} — watch for reversal"
 
         # Append anomaly context when present
         if enriched["anomaly_flags"]:

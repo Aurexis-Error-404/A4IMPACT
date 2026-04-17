@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { SeasonPriceRecord, formatTonnes } from "../lib/canned-data";
+import { useTranslations } from "next-intl";
 
 type Props = {
   records: SeasonPriceRecord[];
 };
 
 export function SeasonArrivalChart({ records }: Props) {
+  const t = useTranslations("charts");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -27,19 +29,19 @@ export function SeasonArrivalChart({ records }: Props) {
 
   return (
     <article className="card">
-      <span className="card-label">Season arrival view</span>
-      <h3>Kharif and Rabi arrivals</h3>
+      <span className="card-label">{t("arrivalView")}</span>
+      <h3>{t("arrivalTitle")}</h3>
       <p className="card-copy">
-        Arrival volume per season, scaled against the peak observed value.
+        {t("arrivalDesc")}
       </p>
       <div className="legend">
         <span className="legend-item">
           <span className="swatch" style={{ background: "#ef9f27" }} />
-          Kharif arrival
+          {t("kharifArrival")}
         </span>
         <span className="legend-item">
           <span className="swatch" style={{ background: "#1d9e75" }} />
-          Rabi arrival
+          {t("rabiArrival")}
         </span>
       </div>
       <div className="arrival-stack">

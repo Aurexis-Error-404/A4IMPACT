@@ -46,6 +46,23 @@ export function RecommendationCard({ insights, loading = false }: Props) {
       <span className="rec-confidence">{confLabel}</span>
       <p className="rec-rationale">{insights.recommendationRationale}</p>
 
+      {insights.actionableTiming && (
+        <div className="rec-timing-chip">
+          <span className="rec-timing-icon">⏱</span>
+          <span className="rec-timing-text">{insights.actionableTiming}</span>
+        </div>
+      )}
+
+      {insights.conflictScore && (
+        <span className={`rec-conflict-badge rec-conflict--${insights.conflictScore.toLowerCase()}`}>
+          {insights.conflictScore === "LOW"
+            ? "Agents agreed"
+            : insights.conflictScore === "MEDIUM"
+            ? "Mixed signals"
+            : "Agents split"}
+        </span>
+      )}
+
       {insights.sellPctNow !== undefined && insights.holdPct !== undefined && (
         <StagingGauge sellPct={insights.sellPctNow} holdPct={insights.holdPct} />
       )}

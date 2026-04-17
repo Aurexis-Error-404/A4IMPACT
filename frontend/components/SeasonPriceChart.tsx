@@ -7,12 +7,14 @@ import {
   formatCurrency,
   pointSeries,
 } from "../lib/canned-data";
+import { useTranslations } from "next-intl";
 
 type Props = {
   records: SeasonPriceRecord[];
 };
 
 export function SeasonPriceChart({ records }: Props) {
+  const t = useTranslations("charts");
   const width = 760;
   const height = 280;
   const padding = 32;
@@ -25,10 +27,10 @@ export function SeasonPriceChart({ records }: Props) {
   }, [records]);
 
   const series = [
-    { key: "msp", color: "#d4a24c", label: "MSP" },
-    { key: "kharif_price", color: "#8a9a5b", label: "Kharif price" },
-    { key: "rabi_price", color: "#4fa69a", label: "Rabi price" },
-  ] as const;
+    { key: "msp" as const, color: "#d4a24c", label: t("msp") },
+    { key: "kharif_price" as const, color: "#8a9a5b", label: t("kharifPrice") },
+    { key: "rabi_price" as const, color: "#4fa69a", label: t("rabiPrice") },
+  ];
 
   const allValues = records
     .flatMap((r) => [r.msp, r.kharif_price, r.rabi_price])
@@ -37,9 +39,9 @@ export function SeasonPriceChart({ records }: Props) {
   if (allValues.length === 0) {
     return (
       <article className="card">
-        <span className="card-label">Season price view</span>
-        <h3>Price trajectory</h3>
-        <p className="card-copy">No priced seasons available for this commodity.</p>
+        <span className="card-label">{t("priceView")}</span>
+        <h3>{t("priceTrajectoryTitle")}</h3>
+        <p className="card-copy">{t("noPriceData")}</p>
       </article>
     );
   }
@@ -49,11 +51,10 @@ export function SeasonPriceChart({ records }: Props) {
 
   return (
     <article className="card feature">
-      <span className="card-label">Season price view</span>
-      <h3>Price trajectory across seasons</h3>
+      <span className="card-label">{t("priceView")}</span>
+      <h3>{t("priceTrajectoryTitle")}</h3>
       <p className="card-copy">
-        MSP, Kharif, and Rabi reference prices charted together so the spread is
-        visible at a glance.
+        {t("priceTrajectoryDesc")}
       </p>
       <div className="legend">
         {series.map((item) => (

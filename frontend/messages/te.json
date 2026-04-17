@@ -73,6 +73,65 @@
     "atCurrent": "\u0c2a\u0c4d\u0c30\u0c38\u0c4d\u0c24\u0c41\u0c24 \u0c27\u0c30\u0c2a\u0c48 \u0c32\u0c3e\u0c2d\u0c02",
     "atCeiling": "\u0c17\u0c30\u0c3f\u0c37\u0c4d\u0c20 \u0c27\u0c30\u0c2a\u0c48 \u0c32\u0c3e\u0c2d\u0c02",
     "stagingAdvice": "\u0c05\u0c2e\u0c4d\u0c2e\u0c15\u0c02 \u0c35\u0c4d\u0c2f\u0c42\u0c39\u0c02",
-    "na": "\u0c35\u0c30\u0c4d\u0c24\u0c3f\u0c02\u0c1a\u0c26\u0c41"
+    "na": "వర్తించదు"
+  },
+  "dashboard": {
+    "loading": "వస్తువుల డేటాను లోడ్ చేస్తోంది…",
+    "loadingCommodity": "{commodity} లోడ్ అవుతోంది…",
+    "spotlight": "ప్రధాన సిఫార్సు",
+    "referencePrice": "సూచిక ధర",
+    "mspFloor": "కనీస మద్దతు ధర (MSP)",
+    "trend": "ధోరణి",
+    "coverage": "కవరేజ్",
+    "pressurePointsTitle": "వస్తువు ఒత్తిడి పాయింట్లు",
+    "pressurePointsDesc": "సిగ్నల్స్ ధర ఒత్తిడి, వేగం మరియు కవరేజ్ రిస్క్ ఆధారంగా వర్గీకరించబడ్డాయి.",
+    "routesKicker": "వస్తువు మార్గాలు",
+    "routesTitle": "ప్రత్యేక కమోడిటీ వివరాల పేజీని తెరవండి."
+  },
+  "mspComparison": {
+    "mspFloor": "కనీస మద్దతు ధర",
+    "referencePrice": "సూచిక ధర",
+    "rabiBasis": "రబీ ఆధారం",
+    "kharifBasis": "ఖరీఫ్ ఆధారం",
+    "deviation": "వ్యత్యాసం",
+    "aboveMsp": "MSP పైన",
+    "belowMsp": "MSP కింద",
+    "atMsp": "MSP వద్ద",
+    "gauge": "గేజ్"
+  },
+  "charts": {
+    "priceView": "సీజన్ ధర వీక్షణ",
+    "priceTrajectoryTitle": "సీజన్ల అంతటా ధర సరళి",
+    "priceTrajectoryDesc": "MSP, ఖరీఫ్ మరియు రబీ సూచిక ధరలు ఒకే చార్టులో చూపబడ్డాయి, తద్వారా వ్యత్యాసం సులభంగా తెలుస్తుంది.",
+    "noPriceData": "ఈ వస్తువుకు సంబంధించిన ధరల డేటా లేదు.",
+    "msp": "MSP",
+    "kharifPrice": "ఖరీఫ్ ధర",
+    "rabiPrice": "రబీ ధర",
+    "arrivalView": "సీజన్ రాక వీక్షణ",
+    "arrivalTitle": "ఖరీఫ్ మరియు రబీ రాక",
+    "arrivalDesc": "సీజన్‌లోని రాక ఘనపరిమాణం, గరిష్ట విలువ ఆధారంగా అంచనా వేయబడింది.",
+    "kharifArrival": "ఖరీఫ్ రాక",
+    "rabiArrival": "రబీ రాక"
+  },
+  "pulse": {
+    "pulseLabel": "మార్కెట్ పల్స్",
+    "deviationsTitle": "అతిపెద్ద MSP వ్యత్యాసాలు",
+    "deviationsDesc": "సూచిక ధర MSP కంటే ఎంత దూరంలో ఉందనే దాని ఆధారంగా ర్యాంక్ చేయబడినవి."
+  },
+  "seasonalComparison": {
+    "label": "సీజనల్ పోలిక",
+    "title": "ఖరీఫ్ vs రబీ మిశ్రమం",
+    "desc": "గమనించిన సీజన్లలో కవరేజ్ విభజన మరియు రాక తీవ్రత."
+  },
+  "summaryTable": {
+    "label": "వివరణాత్మక వీక్షణ",
+    "title": "సీజన్ వారీ వివరాలు",
+    "desc": "ప్రతి గమనించిన సీజన్ కోసం MSP, ధర మరియు రాక యొక్క ఖచ్చితమైన విలువలు.",
+    "season": "సీజన్",
+    "msp": "MSP",
+    "kharifPrice": "ఖరీఫ్ ధర",
+    "kharifArrival": "ఖరీఫ్ రాక",
+    "rabiPrice": "రబీ ధర",
+    "rabiArrival": "రబీ రాక"
   }
 }

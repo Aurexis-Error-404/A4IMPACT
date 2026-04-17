@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { AlertSeverityStack } from "../../components/AlertSeverityStack";
 import { CommodityFilterBar } from "../../components/CommodityFilterBar";
 import { HeroCanvas } from "../../components/HeroCanvas";
@@ -15,9 +16,15 @@ import { TopNav } from "../../components/TopNav";
 import { PriceRangeBand } from "../../components/PriceRangeBand";
 import { DeltaHistorySparkline } from "../../components/DeltaHistorySparkline";
 import { TrendArrowBadge } from "../../components/TrendArrowBadge";
+import { DebatePanel } from "../../components/DebatePanel";
+import { QuickProfitCalc } from "../../components/QuickProfitCalc";
+import { CommodityComparisonPanel } from "../../components/CommodityComparisonPanel";
+import { AlertBanner } from "../../components/AlertBanner";
+import type { DebateAlertEvent } from "../../components/AlertBanner";
 import {
   fetchAllCommodityPairs,
   fetchCommodityInsights,
+  fetchCommodityCards,
   fetchCommoditySeries,
   fetchDashboardSummary,
   fetchAIRecommendation,
@@ -40,8 +47,10 @@ type DashState = {
 type Pair = { group: string; commodity: string; slug: string };
 
 export default function DashboardPage() {
+  const t = useTranslations("dashboard");
   const [dash, setDash] = useState<DashState | null>(null);
   const [allPairs, setAllPairs] = useState<Pair[]>([]);
+  const [allCards, setAllCards] = useState<CommodityCardSummary[]>([]);
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedCommodity, setSelectedCommodity] = useState("");
   const [insights, setInsights] = useState<CommodityInsightSummary | null>(null);
@@ -49,11 +58,15 @@ export default function DashboardPage() {
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [aiRec, setAiRec] = useState<CommodityInsightSummary | null>(null);
   const [recLoading, setRecLoading] = useState(false);
+  const [debateOpen, setDebateOpen] = useState(false);
+  const [liveAlerts, setLiveAlerts] = useState<DebateAlertEvent[]>([]);
+  const [comparisonInsights, setComparisonInsights] = useState<Record<string, CommodityInsightSummary>>({});
 
   useEffect(() => {
-    Promise.all([fetchDashboardSummary(), fetchAllCommodityPairs()]).then(
-      ([summary, pairs]) => {
+    Promise.all([fetchDashboardSummary(), fetchAllCommodityPairs(), fetchCommodityCards()]).then(
+      ([summary, pairs, cards]) => {
         setAllPairs(pairs);
+        setAllCards(cards);
         setDash({
           movers: summary.movers,
           alerts: summary.alerts,
@@ -70,6 +83,14 @@ export default function DashboardPage() {
     );
   }, []);
 
+  const handleRequestComparisonInsights = useCallback((slug: string) => {
+    const pair = allPairs.find((p) => p.slug === slug);
+    if (!pair) return;
+    fetchCommodityInsights(pair.group, pair.commodity).then((ins) => {
+      setComparisonInsights((prev) => ({ ...prev, [slug]: ins }));
+    }).catch(() => {});
+  }, [allPairs]);
+
   const groups = useMemo(
     () => [...new Set(allPairs.map((p) => p.group))],
     [allPairs],
@@ -80,9 +101,12 @@ export default function DashboardPage() {
     [allPairs, selectedGroup],
   );
 
-  // Fetch insights + records when selected commodity changes
+  // Fetch insights + records when selected commodity changes.
+  // cancelled flag prevents stale responses from a previous selection overwriting
+  // the current one when the user switches commodities before the fetch completes.
   useEffect(() => {
     if (!selectedGroup || !selectedCommodity) return;
+    let cancelled = false;
     setInsightsLoading(true);
     setRecLoading(true);
     setAiRec(null);
@@ -91,21 +115,24 @@ export default function DashboardPage() {
       fetchCommoditySeries(selectedGroup, selectedCommodity),
     ])
       .then(([ins, rec]) => {
+        if (cancelled) return;
         setInsights(ins);
         setRecords(rec);
-        setInsightsLoading(false); // Unblock core UI immediately
+        setInsightsLoading(false);
 
-        // Fire parallel background fetch to Groq AI
         fetchAIRecommendation(selectedCommodity)
-          .then((aiData) => setAiRec(aiData))
-          .catch((err) => console.error("Groq AI Error:", err))
-          .finally(() => setRecLoading(false));
+          .then((aiData) => { if (!cancelled) setAiRec(aiData); })
+          .catch((err) => { if (!cancelled) console.error("AI fetch error:", err); })
+          .finally(() => { if (!cancelled) setRecLoading(false); });
       })
       .catch((err) => {
-        console.error(err);
-        setInsightsLoading(false);
-        setRecLoading(false);
+        if (!cancelled) {
+          console.error(err);
+          setInsightsLoading(false);
+          setRecLoading(false);
+        }
       });
+    return () => { cancelled = true; };
   }, [selectedGroup, selectedCommodity]);
 
   if (!dash) {
@@ -114,7 +141,7 @@ export default function DashboardPage() {
         <TopNav />
         <div className="dash-loading">
           <div className="dash-loading-spinner" />
-          <p>Loading commodity intelligence…</p>
+          <p>{t("loading")}</p>
         </div>
       </main>
     );
@@ -122,25 +149,58 @@ export default function DashboardPage() {
 
   return (
     <main className="page-shell dashboard-page">
+      <AlertBanner
+        alerts={liveAlerts}
+        onDismiss={(i) => setLiveAlerts((prev) => prev.filter((_, idx) => idx !== i))}
+      />
+
       <TopNav activeCommodityLabel={insights?.commodity ?? selectedCommodity} />
 
-      <CommodityFilterBar
-        groups={groups}
-        selectedGroup={selectedGroup}
-        onGroupChange={(newGroup) => {
-          const first = allPairs.find((p) => p.group === newGroup)?.commodity ?? "";
-          setSelectedGroup(newGroup);
-          setSelectedCommodity(first);
-        }}
-        commodities={commoditiesInGroup}
-        selectedCommodity={selectedCommodity}
-        onCommodityChange={setSelectedCommodity}
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <CommodityFilterBar
+          groups={groups}
+          selectedGroup={selectedGroup}
+          onGroupChange={(newGroup) => {
+            const first = allPairs.find((p) => p.group === newGroup)?.commodity ?? "";
+            setSelectedGroup(newGroup);
+            setSelectedCommodity(first);
+          }}
+          commodities={commoditiesInGroup}
+          selectedCommodity={selectedCommodity}
+          onCommodityChange={setSelectedCommodity}
+        />
+        {selectedCommodity && (
+          <button
+            onClick={() => setDebateOpen(true)}
+            style={{
+              flexShrink: 0,
+              background: "linear-gradient(135deg, rgba(127,119,221,0.25), rgba(127,119,221,0.12))",
+              border: "1px solid rgba(127,119,221,0.5)",
+              color: "var(--violet)",
+              borderRadius: "8px",
+              padding: "7px 14px",
+              fontSize: "12px",
+              fontWeight: 600,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            ⚡ Live Debate
+          </button>
+        )}
+      </div>
+
+      <DebatePanel
+        commodity={selectedCommodity}
+        open={debateOpen}
+        onClose={() => setDebateOpen(false)}
+        onAlert={(ev) => setLiveAlerts((prev) => [...prev, ev])}
       />
 
       {insightsLoading ? (
         <div className="dash-loading inline">
           <div className="dash-loading-spinner" />
-          <p>Loading {selectedCommodity}…</p>
+          <p>{t("loadingCommodity", { commodity: selectedCommodity })}</p>
         </div>
       ) : insights ? (
         <>
@@ -152,28 +212,28 @@ export default function DashboardPage() {
             />
             <div className="overview-aside">
               <div className="metric-card feature-card">
-                <span className="metric-label">Spotlight recommendation</span>
+                <span className="metric-label">{t("spotlight")}</span>
                 <strong>{insights.recommendationLabel}</strong>
                 <p>{insights.recommendationRationale}</p>
               </div>
               <div className="metric-grid compact">
                 <div className="metric-card">
-                  <span className="metric-label">Reference price</span>
+                  <span className="metric-label">{t("referencePrice")}</span>
                   <strong>{formatCurrency(insights.latestReferencePrice)}</strong>
                 </div>
                 <div className="metric-card">
-                  <span className="metric-label">MSP floor</span>
+                  <span className="metric-label">{t("mspFloor")}</span>
                   <strong>{formatCurrency(insights.latestMsp)}</strong>
                 </div>
                 <div className="metric-card">
-                  <span className="metric-label">Trend</span>
+                  <span className="metric-label">{t("trend")}</span>
                   <strong>{insights.priceTrend}</strong>
                   {(aiRec ?? insights).deltaPctHistory && (
                     <DeltaHistorySparkline history={(aiRec ?? insights).deltaPctHistory!} />
                   )}
                 </div>
                 <div className="metric-card">
-                  <span className="metric-label">Coverage</span>
+                  <span className="metric-label">{t("coverage")}</span>
                   <strong>{insights.seasonAvailability}</strong>
                 </div>
               </div>
@@ -189,6 +249,7 @@ export default function DashboardPage() {
             </div>
             <div className="side-stack">
               <RecommendationCard insights={aiRec ?? insights} loading={recLoading} />
+              <QuickProfitCalc insights={aiRec ?? insights} />
               <RiskPanel insights={insights} />
               {(aiRec ?? insights).expectedPriceRange && (() => {
                 const r = (aiRec ?? insights).expectedPriceRange!;
@@ -210,9 +271,9 @@ export default function DashboardPage() {
         <MarketPulseFeed events={dash.pulseEvents} />
         <article className="card feature">
           <span className="card-label">Alert stack</span>
-          <h3>Commodity pressure points</h3>
+          <h3>{t("pressurePointsTitle")}</h3>
           <p className="card-copy">
-            Signals are grouped by price pressure, momentum, and coverage risk.
+            {t("pressurePointsDesc")}
           </p>
           <AlertSeverityStack alerts={dash.alerts} />
         </article>
@@ -221,8 +282,8 @@ export default function DashboardPage() {
       <section className="directory-shell">
         <div className="section-heading">
           <div>
-            <span className="section-kicker">Commodity routes</span>
-            <h2>Open a dedicated commodity detail page.</h2>
+            <span className="section-kicker">{t("routesKicker")}</span>
+            <h2>{t("routesTitle")}</h2>
           </div>
           {insights ? (
             <TrendArrowBadge
@@ -261,6 +322,14 @@ export default function DashboardPage() {
             );
           })}
         </div>
+
+        {allCards.length > 0 && (
+          <CommodityComparisonPanel
+            allCommodities={allCards}
+            insights={comparisonInsights}
+            onRequestInsights={handleRequestComparisonInsights}
+          />
+        )}
       </section>
     </main>
   );

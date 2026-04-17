@@ -105,6 +105,7 @@ function toCard(ins: CommodityInsightSummary): CommodityCardSummary {
   };
 }
 
+
 function toPulseEvents(insights: CommodityInsightSummary[], limit: number): PulseEvent[] {
   return insights
     .filter((ins) => ins.latestReferencePrice !== null && ins.latestMsp !== null)

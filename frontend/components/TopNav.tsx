@@ -8,10 +8,9 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 
 type Props = {
   activeCommodityLabel?: string;
-  locale?: string;
 };
 
-export function TopNav({ activeCommodityLabel, locale }: Props) {
+export function TopNav({ activeCommodityLabel }: Props) {
   const pathname = usePathname();
   const t = useTranslations("nav");
 
@@ -51,7 +50,7 @@ export function TopNav({ activeCommodityLabel, locale }: Props) {
         ) : (
           <span className="mono">{t("seasonalMode")}</span>
         )}
-        <LanguageSwitcher current={locale} />
+        <LanguageSwitcher />
       </div>
     </header>
   );

@@ -86,6 +86,8 @@ def _sanitize(med: dict, base: dict) -> dict:
     conf     = _normalise(med.get("confidenceLabel", ""))
     risk     = _normalise(med.get("riskLevel", ""))
     rationale = med.get("recommendationRationale", "")
+    timing   = med.get("actionable_timing", "")
+    conflict = med.get("conflict_score", "LOW")
 
     return {
         "recommendationLabel":   rec  if rec  in _VALID_REC  else base["recommendationLabel"],
@@ -93,6 +95,8 @@ def _sanitize(med: dict, base: dict) -> dict:
         "riskLevel":             risk if risk in _VALID_RISK else base["riskLevel"],
         "recommendationRationale": rationale if isinstance(rationale, str) and rationale
                                                else base["recommendationRationale"],
+        "actionableTiming": timing if isinstance(timing, str) else "",
+        "conflictScore":    conflict if conflict in {"LOW", "MEDIUM", "HIGH"} else "LOW",
     }
 
 
@@ -149,6 +153,17 @@ async def get_recommendation(
 
     # Merge mediator output over deterministic base
     result = {**base, **med}
+
+    # Forward new structured fields from individual agents
+    result["agentKeyDatapoints"] = {
+        "optimist":  opt.get("key_datapoints", []),
+        "pessimist": pess.get("key_datapoints", []),
+        "risk":      risk.get("key_datapoints", []),
+    }
+    if pess.get("loss_per_quintal") is not None:
+        result["lossPerQuintal"] = pess["loss_per_quintal"]
+    if risk.get("floor_gap_rs") is not None:
+        result["floorGapRs"] = risk["floor_gap_rs"]
 
     # Staging split computed from the *final* merged risk + confidence (not base alone)
     sell_pct, hold_pct = compute_staging(

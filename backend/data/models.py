@@ -1,6 +1,8 @@
 from typing import Literal
 from pydantic import BaseModel
 
+
+
 SeasonAvailability = Literal["Kharif only", "Rabi only", "Both", "Sparse"]
 RiskLevel = Literal["Low", "Watch", "High"]
 TrendDirection = Literal["up", "down", "flat"]
@@ -81,3 +83,46 @@ class CommodityInsightSummary(BaseModel):
     recommendedChannel: str = ""
     sellPctNow: int = 0
     holdPct: int = 100
+    actionableTiming: str = ""
+    conflictScore: str = "LOW"
+
+
+class CommodityPair(BaseModel):
+    group: str
+    commodity: str
+
+
+class CommodityCardSummary(BaseModel):
+    slug: str
+    commodity: str
+    group: str
+    latestSeason: str
+    latestReferencePrice: float | None
+    latestMsp: float | None
+    latestDeltaPct: float
+    riskLevel: RiskLevel
+    seasonAvailability: SeasonAvailability
+    recommendationLabel: RecommendationLabel
+    priceTrend: TrendDirection
+
+
+class PulseEvent(BaseModel):
+    id: str
+    commodity: str
+    group: str
+    season: str
+    deltaLabel: str
+    delta: float
+    label: str
+    timeAgo: str
+
+
+class DashboardSummary(BaseModel):
+    dataMode: str
+    totalCommodities: int
+    totalGroups: int
+    spotlight: CommodityCardSummary | None
+    movers: list[CommodityCardSummary]
+    alerts: list[AlertItem]
+    pulseEvents: list[PulseEvent]
+    updatedAt: str

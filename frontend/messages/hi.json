@@ -74,5 +74,64 @@
     "atCeiling": "\u0909\u091a\u094d\u091a\u0924\u092e \u092e\u0942\u0932\u094d\u092f \u092a\u0930 \u0932\u093e\u092d",
     "stagingAdvice": "\u092c\u093f\u0915\u094d\u0930\u0940 \u0930\u0923\u0928\u0940\u0924\u093f",
     "na": "\u0909\u092a\u0932\u092c\u094d\u0927 \u0928\u0939\u0940\u0902"
+  },
+  "dashboard": {
+    "loading": "वस्तु बुद्धिमत्ता लोड हो रही है…",
+    "loadingCommodity": "{commodity} लोड हो रहा है…",
+    "spotlight": "स्पॉटलाइट सिफ़ारिश",
+    "referencePrice": "संदर्भ मूल्य",
+    "mspFloor": "एमएसपी न्यूनतम",
+    "trend": "रुझान",
+    "coverage": "कवरेज",
+    "pressurePointsTitle": "वस्तु दबाव केंद्र",
+    "pressurePointsDesc": "संकेत मूल्य दबाव, गति और कवरेज जोखिम द्वारा वर्गीकृत हैं।",
+    "routesKicker": "वस्तु मार्ग",
+    "routesTitle": "एक समर्पित वस्तु विवरण पृष्ठ खोलें।"
+  },
+  "mspComparison": {
+    "mspFloor": "एमएसपी न्यूनतम",
+    "referencePrice": "संदर्भ मूल्य",
+    "rabiBasis": "रबी आधार",
+    "kharifBasis": "खरीफ आधार",
+    "deviation": "विचलन",
+    "aboveMsp": "एमएसपी से ऊपर",
+    "belowMsp": "एमएसपी से नीचे",
+    "atMsp": "एमएसपी पर",
+    "gauge": "गेज"
+  },
+  "charts": {
+    "priceView": "सीज़न मूल्य दृश्य",
+    "priceTrajectoryTitle": "सीज़न में मूल्य प्रक्षेपवक्र",
+    "priceTrajectoryDesc": "एमएसपी, खरीफ और रबी संदर्भ मूल्य एक साथ चार्ट किए गए हैं ताकि प्रसार स्पष्ट रूप से दिखाई दे।",
+    "noPriceData": "इस वस्तु के लिए कोई मूल्यवान सीज़न उपलब्ध नहीं है।",
+    "msp": "एमएसपी",
+    "kharifPrice": "खरीफ मूल्य",
+    "rabiPrice": "रबी मूल्य",
+    "arrivalView": "सीज़न आगमन दृश्य",
+    "arrivalTitle": "खरीफ और रबी आगमन",
+    "arrivalDesc": "प्रति सीज़न आगमन मात्रा, शिखर मूल्य के विरुद्ध मापी गई।",
+    "kharifArrival": "खरीफ आगमन",
+    "rabiArrival": "रबी आगमन"
+  },
+  "pulse": {
+    "pulseLabel": "बाज़ार की नब्ज़",
+    "deviationsTitle": "सबसे बड़े एमएसपी विचलन",
+    "deviationsDesc": "वस्तुएं जिनकी संदर्भ कीमतें एमएसपी से कितनी दूर हैं, उसके आधार पर रैंक की गई हैं।"
+  },
+  "seasonalComparison": {
+    "label": "मौसमी तुलना",
+    "title": "खरीफ बनाम रबी मिश्रण",
+    "desc": "अवलोकित सीज़न में कवरेज विभाजन और आगमन तीव्रता।"
+  },
+  "summaryTable": {
+    "label": "विस्तृत दृश्य",
+    "title": "सीज़न-दर-सीज़न विवरण",
+    "desc": "प्रत्येक अवलोकित सीज़न के लिए एमएसपी, मूल्य और आगमन के सटीक मान।",
+    "season": "सीज़न",
+    "msp": "एमएसपी",
+    "kharifPrice": "खरीफ मूल्य",
+    "kharifArrival": "खरीफ आगमन",
+    "rabiPrice": "रबी मूल्य",
+    "rabiArrival": "रबी आगमन"
   }
 }

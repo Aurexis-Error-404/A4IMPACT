@@ -47,12 +47,16 @@ def _sanitize(med: dict, base: dict) -> dict:
     conf      = _normalise(med.get("confidenceLabel", ""))
     risk      = _normalise(med.get("riskLevel", ""))
     rationale = med.get("recommendationRationale", "")
+    timing    = med.get("actionable_timing", "")
+    conflict  = med.get("conflict_score", "LOW")
     return {
         "recommendationLabel":    rec  if rec  in _VALID_REC  else base["recommendationLabel"],
         "confidenceLabel":        conf if conf in _VALID_CONF else "Moderate confidence",
         "riskLevel":              risk if risk in _VALID_RISK else base["riskLevel"],
         "recommendationRationale": rationale if isinstance(rationale, str) and rationale
                                                else base["recommendationRationale"],
+        "actionableTiming": timing if isinstance(timing, str) else "",
+        "conflictScore":    conflict if conflict in {"LOW", "MEDIUM", "HIGH"} else "LOW",
     }
 
 

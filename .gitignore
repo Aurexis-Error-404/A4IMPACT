@@ -1,0 +1,7 @@
+# test outputs
+tts_test_output.mp3
+whisper_test_result.txt
+
+# Next.js
+krishicfo/node_modules/
+krishicfo/.next/

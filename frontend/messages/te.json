@@ -1,0 +1,138 @@
+{
+  "nav": {
+    "home": "\u0c07\u0c32\u0c4d\u0c32\u0c41",
+    "dashboard": "\u0c21\u0c4d\u0c2f\u0c3e\u0c37\u0c4d\u0c2c\u0c4b\u0c30\u0c4d\u0c21\u0c41",
+    "seasonalMode": "\u0c0b\u0c24\u0c41\u0c35\u0c41\u0c32 \u0c35\u0c38\u0c4d\u0c24\u0c41\u0c35\u0c41 \u0c35\u0c3f\u0c27\u0c3e\u0c28\u0c02",
+    "detail": "\u0c35\u0c3f\u0c35\u0c30\u0c02"
+  },
+  "risk": {
+    "Low": "\u0c24\u0c15\u0c4d\u0c15\u0c41\u0c35 \u0c30\u0c3f\u0c38\u0c4d\u0c15\u0c41",
+    "Watch": "\u0c1c\u0c3e\u0c17\u0c4d\u0c30\u0c24\u0c4d\u0c24",
+    "High": "\u0c05\u0c27\u0c3f\u0c15 \u0c30\u0c3f\u0c38\u0c4d\u0c15\u0c41",
+    "review": "\u0c30\u0c3f\u0c38\u0c4d\u0c15\u0c41 \u0c38\u0c2e\u0c40\u0c15\u0c4d\u0c37",
+    "latestRefPrice": "\u0c24\u0c3e\u0c1c\u0c3e \u0c38\u0c02\u0c26\u0c30\u0c4d\u0c2d \u0c27\u0c30",
+    "mspFloor": "\u0c0e\u0c02\u0c0e\u0c38\u0c4d\u0c2a\u0c3f \u0c15\u0c28\u0c3f\u0c37\u0c4d\u0c20\u0c02",
+    "deviation": "\u0c35\u0c4d\u0c2f\u0c24\u0c3f\u0c30\u0c47\u0c15\u0c02",
+    "seasonCoverage": "\u0c30\u0c41\u0c24\u0c41\u0c35\u0c41 \u0c15\u0c35\u0c30\u0c47\u0c1c\u0c4d"
+  },
+  "rec": {
+    "Hold": "\u0c28\u0c3f\u0c32\u0c41\u0c2a\u0c41",
+    "Lean sell": "\u0c05\u0c2e\u0c4d\u0c2e\u0c21\u0c3e\u0c28\u0c3f\u0c15\u0c3f \u0c2e\u0c4a\u0c17\u0c4d\u0c17\u0c41",
+    "Defer": "\u0c35\u0c3e\u0c2f\u0c3f\u0c26\u0c3e \u0c35\u0c47\u0c2f\u0c02\u0c21\u0c3f",
+    "Protect": "\u0c30\u0c15\u0c4d\u0c37\u0c3f\u0c02\u0c1a\u0c41\u0c15\u0c4b\u0c02\u0c21\u0c3f",
+    "aiLabel": "AI \u0c38\u0c42\u0c1a\u0c28",
+    "analysing": "Groq AI\u0c24\u0c4b \u0c35\u0c3f\u0c36\u0c4d\u0c32\u0c47\u0c37\u0c3f\u0c38\u0c4d\u0c24\u0c41\u0c28\u0c4d\u0c28\u0c3e\u0c02\u2026",
+    "channel": "\u0c0e\u0c15\u0c4d\u0c15\u0c21 \u0c05\u0c2e\u0c4d\u0c2e\u0c02\u0c21\u0c3f",
+    "sellNow": "\u0c07\u0c2a\u0c4d\u0c2a\u0c41\u0c21\u0c47 \u0c05\u0c2e\u0c4d\u0c2e\u0c02\u0c21\u0c3f",
+    "holdLabel": "\u0c28\u0c3f\u0c32\u0c41\u0c2a\u0c41"
+  },
+  "confidence": {
+    "High confidence": "\u0c05\u0c27\u0c3f\u0c15 \u0c28\u0c3f\u0c36\u0c4d\u0c1a\u0c2f\u0c24",
+    "Moderate confidence": "\u0c2e\u0c27\u0c4d\u0c2f\u0c2e \u0c28\u0c3f\u0c36\u0c4d\u0c1a\u0c2f\u0c24",
+    "Low confidence": "\u0c24\u0c15\u0c4d\u0c15\u0c41\u0c35 \u0c28\u0c3f\u0c36\u0c4d\u0c1a\u0c2f\u0c24"
+  },
+  "hero": {
+    "seasonal": "\u0c0b\u0c24\u0c41\u0c35\u0c41\u0c32\u0c41",
+    "tagline": "\u0c27\u0c30, \u0c0e\u0c02\u0c0e\u0c38\u0c4d\u0c2a\u0c3f \u0c2e\u0c30\u0c3f\u0c2f\u0c41 \u0c30\u0c41\u0c24\u0c41\u0c35\u0c41\u0c32 \u0c15\u0c35\u0c30\u0c47\u0c1c\u0c4d \u0c35\u0c3f\u0c36\u0c4d\u0c32\u0c47\u0c37\u0c23\u002e",
+    "riskPrefix": "\u0c30\u0c3f\u0c38\u0c4d\u0c15\u0c41",
+    "latestSeason": "\u0c24\u0c3e\u0c1c\u0c3e \u0c0b\u0c24\u0c41\u0c35\u0c41",
+    "refreshed": "\u0c05\u0c2a\u0c4d\u0c21\u0c47\u0c1f\u0c4d",
+    "refPrice": "\u0c38\u0c02\u0c26\u0c30\u0c4d\u0c2d \u0c27\u0c30",
+    "vsMsp": "\u0c0e\u0c02\u0c0e\u0c38\u0c4d\u0c2a\u0c3f\u0c15\u0c3f \u0c35\u0c4d\u0c2f\u0c24\u0c3f\u0c30\u0c47\u0c15\u0c02\u0c17\u0c3e",
+    "selectPrompt": "\u0c2a\u0c4d\u0c30\u0c3e\u0c30\u0c02\u0c2d\u0c3f\u0c02\u0c1a\u0c21\u0c3e\u0c28\u0c3f\u0c15\u0c3f \u0c12\u0c15 \u0c35\u0c38\u0c4d\u0c24\u0c41\u0c35\u0c41\u0c28\u0c41 \u0c0e\u0c02\u0c1a\u0c41\u0c15\u0c4b\u0c02\u0c21\u0c3f\u002e",
+    "intelligenceLabel": "\u0c0b\u0c24\u0c41\u0c35\u0c41\u0c32 \u0c35\u0c38\u0c4d\u0c24\u0c41\u0c35\u0c41 \u0c21\u0c4d\u0c2f\u0c3e\u0c37\u0c4d\u0c2c\u0c4b\u0c30\u0c4d\u0c21\u0c41"
+  },
+  "alerts": {
+    "title": "\u0c2e\u0c3e\u0c30\u0c4d\u0c15\u0c46\u0c1f\u0c4d \u0c39\u0c46\u0c1a\u0c4d\u0c1a\u0c30\u0c3f\u0c15\u0c32\u0c41",
+    "noAlerts": "\u0c38\u0c15\u0c4d\u0c30\u0c3f\u0c2f \u0c39\u0c46\u0c1a\u0c4d\u0c1a\u0c30\u0c3f\u0c15\u0c32\u0c41 \u0c32\u0c47\u0c35\u0c41",
+    "noAlertsDetail": "\u0c05\u0c28\u0c4d\u0c28\u0c3f \u0c35\u0c38\u0c4d\u0c24\u0c41\u0c35\u0c41\u0c32\u0c41 \u0c0e\u0c02\u0c0e\u0c38\u0c4d\u0c2a\u0c3f \u0c26\u0c17\u0c4d\u0c17\u0c30 \u0c32\u0c47\u0c26\u0c3e \u0c2a\u0c48\u0c28 \u0c09\u0c28\u0c4d\u0c28\u0c3e\u0c2f\u0c3f\u002e",
+    "commoditySignals": "\u0c35\u0c38\u0c4d\u0c24\u0c41\u0c35\u0c41-\u0c28\u0c3f\u0c30\u0c4d\u0c26\u0c3f\u0c37\u0c4d\u0c1f \u0c38\u0c02\u0c15\u0c47\u0c24\u0c3e\u0c32\u0c41",
+    "commoditySignalsDetail": "\u0c08 \u0c39\u0c46\u0c1a\u0c4d\u0c1a\u0c30\u0c3f\u0c15\u0c32\u0c41 \u0c0e\u0c02\u0c1a\u0c41\u0c15\u0c4a\u0c28\u0c4d\u0c28 \u0c35\u0c38\u0c4d\u0c24\u0c41\u0c35\u0c41\u0c15\u0c41 \u0c2e\u0c3e\u0c24\u0c4d\u0c30\u0c2e\u0c47 \u0c35\u0c30\u0c4d\u0c24\u0c3f\u0c38\u0c4d\u0c24\u0c3e\u0c2f\u0c3f\u002e",
+    "pressurePoints": "\u0c35\u0c38\u0c4d\u0c24\u0c41\u0c35\u0c41 \u0c12\u0c24\u0c4d\u0c24\u0c3f\u0c21\u0c3f \u0c15\u0c47\u0c02\u0c26\u0c4d\u0c30\u0c3e\u0c32\u0c41",
+    "pressureDetail": "\u0c38\u0c02\u0c15\u0c47\u0c24\u0c3e\u0c32\u0c41 \u0c27\u0c30 \u0c12\u0c24\u0c4d\u0c24\u0c3f\u0c21\u0c3f, \u0c35\u0c47\u0c17\u0c02 \u0c2e\u0c30\u0c3f\u0c2f\u0c41 \u0c15\u0c35\u0c30\u0c47\u0c1c\u0c4d \u0c30\u0c3f\u0c38\u0c4d\u0c15\u0c41 \u0c06\u0c27\u0c3e\u0c30\u0c02\u0c17\u0c3e \u0c05\u0c02\u0c26\u0c3f\u0c02\u0c1a\u0c2c\u0c21\u0c4d\u0c21\u0c3e\u0c2f\u0c3f\u002e"
+  },
+  "insights": {
+    "latestSeason": "\u0c24\u0c3e\u0c1c\u0c3e \u0c0b\u0c24\u0c41\u0c35\u0c41",
+    "msp": "\u0c0e\u0c02\u0c0e\u0c38\u0c4d\u0c2a\u0c3f",
+    "currentPrice": "\u0c2a\u0c4d\u0c30\u0c38\u0c4d\u0c24\u0c41\u0c24 \u0c27\u0c30",
+    "priceTrend": "\u0c27\u0c30 \u0c2a\u0c4d\u0c30\u0c35\u0c23\u0c24",
+    "expectedRange": "\u0c05\u0c02\u0c1a\u0c28\u0c3e \u0c27\u0c30 \u0c2a\u0c30\u0c3f\u0c27\u0c3f",
+    "floor": "\u0c15\u0c28\u0c3f\u0c37\u0c4d\u0c20\u0c02",
+    "ceiling": "\u0c17\u0c30\u0c3f\u0c37\u0c4d\u0c20\u0c02",
+    "basis": "\u0c06\u0c27\u0c3e\u0c30\u0c02",
+    "sellNowPct": "\u0c07\u0c2a\u0c4d\u0c2a\u0c41\u0c21\u0c47 \u0c05\u0c2e\u0c4d\u0c2e\u0c02\u0c21\u0c3f %",
+    "holdPct": "\u0c28\u0c3f\u0c32\u0c41\u0c2a\u0c41 %"
+  },
+  "profit": {
+    "title": "\u0c32\u0c3e\u0c2d\u0c02 \u0c05\u0c02\u0c1a\u0c28\u0c3e",
+    "subtitle": "\u0c0e\u0c02\u0c0e\u0c38\u0c4d\u0c2a\u0c3f, \u0c2a\u0c4d\u0c30\u0c38\u0c4d\u0c24\u0c41\u0c24 \u0c27\u0c30 \u0c2e\u0c30\u0c3f\u0c2f\u0c41 \u0c17\u0c30\u0c3f\u0c37\u0c4d\u0c20 \u0c27\u0c30\u0c32\u0c4d\u0c32\u0c4b \u0c1c\u0c2e\u0c41 \u0c05\u0c02\u0c1a\u0c28\u0c3e \u0c1a\u0c47\u0c2f\u0c02\u0c21\u0c3f\u002e",
+    "quantity": "\u0c2a\u0c30\u0c3f\u0c2e\u0c3e\u0c23\u0c02 (\u0c15\u0c4d\u0c35\u0c3f\u0c02\u0c1f\u0c3e\u0c32\u0c4d\u0c38\u0c4d)",
+    "inputCost": "\u0c07\u0c28\u0c4d\u0c2a\u0c41\u0c1f\u0c4d \u0c16\u0c30\u0c4d\u0c1a\u0c41 / \u0c15\u0c4d\u0c35\u0c3f\u0c02\u0c1f\u0c3e\u0c32\u0c4d (\u0c30\u0c42.) \u2014 \u0c10\u0c1a\u0c4d\u0c1a\u0c3f\u0c15\u0c02",
+    "calculate": "\u0c32\u0c46\u0c15\u0c4d\u0c15\u0c3f\u0c02\u0c1a\u0c02\u0c21\u0c3f",
+    "atMsp": "\u0c0e\u0c02\u0c0e\u0c38\u0c4d\u0c2a\u0c3f\u0c2a\u0c48 \u0c32\u0c3e\u0c2d\u0c02",
+    "atCurrent": "\u0c2a\u0c4d\u0c30\u0c38\u0c4d\u0c24\u0c41\u0c24 \u0c27\u0c30\u0c2a\u0c48 \u0c32\u0c3e\u0c2d\u0c02",
+    "atCeiling": "\u0c17\u0c30\u0c3f\u0c37\u0c4d\u0c20 \u0c27\u0c30\u0c2a\u0c48 \u0c32\u0c3e\u0c2d\u0c02",
+    "stagingAdvice": "\u0c05\u0c2e\u0c4d\u0c2e\u0c15\u0c02 \u0c35\u0c4d\u0c2f\u0c42\u0c39\u0c02",
+    "na": "వర్తించదు"
+  },
+  "dashboard": {
+    "loading": "వస్తువుల డేటాను లోడ్ చేస్తోంది…",
+    "loadError": "డాష్‌బోర్డ్ డేటా లోడ్ చేయడం విఫలమైంది. బ్యాకెండ్ నడుస్తోందో తనిఖీ చేయండి.",
+    "loadingCommodity": "{commodity} లోడ్ అవుతోంది…",
+    "spotlight": "ప్రధాన సిఫార్సు",
+    "referencePrice": "సూచిక ధర",
+    "mspFloor": "కనీస మద్దతు ధర (MSP)",
+    "trend": "ధోరణి",
+    "coverage": "కవరేజ్",
+    "pressurePointsTitle": "వస్తువు ఒత్తిడి పాయింట్లు",
+    "pressurePointsDesc": "సిగ్నల్స్ ధర ఒత్తిడి, వేగం మరియు కవరేజ్ రిస్క్ ఆధారంగా వర్గీకరించబడ్డాయి.",
+    "routesKicker": "వస్తువు మార్గాలు",
+    "routesTitle": "ప్రత్యేక కమోడిటీ వివరాల పేజీని తెరవండి."
+  },
+  "mspComparison": {
+    "mspFloor": "కనీస మద్దతు ధర",
+    "referencePrice": "సూచిక ధర",
+    "rabiBasis": "రబీ ఆధారం",
+    "kharifBasis": "ఖరీఫ్ ఆధారం",
+    "deviation": "వ్యత్యాసం",
+    "aboveMsp": "MSP పైన",
+    "belowMsp": "MSP కింద",
+    "atMsp": "MSP వద్ద",
+    "gauge": "గేజ్"
+  },
+  "charts": {
+    "priceView": "సీజన్ ధర వీక్షణ",
+    "priceTrajectoryTitle": "సీజన్ల అంతటా ధర సరళి",
+    "priceTrajectoryDesc": "MSP, ఖరీఫ్ మరియు రబీ సూచిక ధరలు ఒకే చార్టులో చూపబడ్డాయి, తద్వారా వ్యత్యాసం సులభంగా తెలుస్తుంది.",
+    "noPriceData": "ఈ వస్తువుకు సంబంధించిన ధరల డేటా లేదు.",
+    "msp": "MSP",
+    "kharifPrice": "ఖరీఫ్ ధర",
+    "rabiPrice": "రబీ ధర",
+    "arrivalView": "సీజన్ రాక వీక్షణ",
+    "arrivalTitle": "ఖరీఫ్ మరియు రబీ రాక",
+    "arrivalDesc": "సీజన్‌లోని రాక ఘనపరిమాణం, గరిష్ట విలువ ఆధారంగా అంచనా వేయబడింది.",
+    "kharifArrival": "ఖరీఫ్ రాక",
+    "rabiArrival": "రబీ రాక"
+  },
+  "pulse": {
+    "pulseLabel": "మార్కెట్ పల్స్",
+    "deviationsTitle": "అతిపెద్ద MSP వ్యత్యాసాలు",
+    "deviationsDesc": "సూచిక ధర MSP కంటే ఎంత దూరంలో ఉందనే దాని ఆధారంగా ర్యాంక్ చేయబడినవి."
+  },
+  "seasonalComparison": {
+    "label": "సీజనల్ పోలిక",
+    "title": "ఖరీఫ్ vs రబీ మిశ్రమం",
+    "desc": "గమనించిన సీజన్లలో కవరేజ్ విభజన మరియు రాక తీవ్రత."
+  },
+  "summaryTable": {
+    "label": "వివరణాత్మక వీక్షణ",
+    "title": "సీజన్ వారీ వివరాలు",
+    "desc": "ప్రతి గమనించిన సీజన్ కోసం MSP, ధర మరియు రాక యొక్క ఖచ్చితమైన విలువలు.",
+    "season": "సీజన్",
+    "msp": "MSP",
+    "kharifPrice": "ఖరీఫ్ ధర",
+    "kharifArrival": "ఖరీఫ్ రాక",
+    "rabiPrice": "రబీ ధర",
+    "rabiArrival": "రబీ రాక"
+  }
+}

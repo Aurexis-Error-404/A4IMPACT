@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   SeasonPriceRecord,
   formatCurrency,
@@ -11,13 +12,12 @@ type Props = {
 };
 
 export function CommoditySummaryTable({ records }: Props) {
+  const t = useTranslations("summaryTable");
   return (
     <article className="card">
-      <span className="card-label">Detailed view</span>
-      <h3>Season-by-season breakdown</h3>
-      <p className="card-copy">
-        Exact values across MSP, price, and arrivals for every observed season.
-      </p>
+      <span className="card-label">{t("label")}</span>
+      <h3>{t("title")}</h3>
+      <p className="card-copy">{t("desc")}</p>
       <div style={{ overflowX: "auto" }}>
         <table
           style={{
@@ -29,10 +29,10 @@ export function CommoditySummaryTable({ records }: Props) {
         >
           <thead>
             <tr>
-              {["Season", "MSP", "Kharif price", "Kharif arrival", "Rabi price", "Rabi arrival"].map(
-                (h) => (
+              {(["season", "msp", "kharifPrice", "kharifArrival", "rabiPrice", "rabiArrival"] as const).map(
+                (key) => (
                   <th
-                    key={h}
+                    key={key}
                     style={{
                       textAlign: "left",
                       padding: "10px 12px",
@@ -44,7 +44,7 @@ export function CommoditySummaryTable({ records }: Props) {
                       borderBottom: "1px solid var(--line-strong)",
                     }}
                   >
-                    {h}
+                    {t(key)}
                   </th>
                 ),
               )}

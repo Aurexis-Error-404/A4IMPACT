@@ -31,6 +31,42 @@ async function post<T>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${API}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`POST ${path} → ${res.status}`);
+  return res.json() as Promise<T>;
+}
+
+export type ProfitEstimateResult = {
+  commodity: string;
+  quantity_quintals: number;
+  cost_per_quintal: number | null;
+  profit_at_msp: number | null;
+  profit_at_current: number | null;
+  profit_at_ceiling: number | null;
+  breakeven_price: number | null;
+  expected_range: { floor: number; ceiling: number; basis: string } | null;
+  sell_pct_now: number;
+  hold_pct: number;
+  staging_advice: string;
+};
+
+export async function fetchProfitEstimate(
+  commodity: string,
+  quantity_quintals: number,
+  cost_per_quintal?: number,
+): Promise<ProfitEstimateResult> {
+  return postJson<ProfitEstimateResult>(
+    `/api/profit-estimate/${encodeURIComponent(commodity)}`,
+    { quantity_quintals, cost_per_quintal: cost_per_quintal ?? null },
+  );
+}
+
 async function allCommodityPairs(): Promise<{ group: string; commodity: string }[]> {
   const groups = await get<string[]>("/api/commodity-groups");
   const nested = await Promise.all(
@@ -68,6 +104,7 @@ function toCard(ins: CommodityInsightSummary): CommodityCardSummary {
     priceTrend: ins.priceTrend,
   };
 }
+
 
 function toPulseEvents(insights: CommodityInsightSummary[], limit: number): PulseEvent[] {
   return insights

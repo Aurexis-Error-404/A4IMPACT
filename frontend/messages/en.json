@@ -1,0 +1,138 @@
+{
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "seasonalMode": "Seasonal commodity mode",
+    "detail": "Detail"
+  },
+  "risk": {
+    "Low": "Low Risk",
+    "Watch": "Watch",
+    "High": "High Risk",
+    "review": "Risk review",
+    "latestRefPrice": "Latest ref price",
+    "mspFloor": "MSP floor",
+    "deviation": "Deviation",
+    "seasonCoverage": "Season coverage"
+  },
+  "rec": {
+    "Hold": "Hold",
+    "Lean sell": "Lean sell",
+    "Defer": "Defer",
+    "Protect": "Protect",
+    "aiLabel": "AI recommendation",
+    "analysing": "Analysing with Groq AI\u2026",
+    "channel": "Sell via",
+    "sellNow": "Sell now",
+    "holdLabel": "Hold"
+  },
+  "confidence": {
+    "High confidence": "High confidence",
+    "Moderate confidence": "Moderate confidence",
+    "Low confidence": "Low confidence"
+  },
+  "hero": {
+    "seasonal": "Seasonal",
+    "tagline": "A heuristic read of price, MSP, and seasonal coverage across the reporting window. Values stay qualitative where the signal is thin.",
+    "riskPrefix": "Risk",
+    "latestSeason": "Latest season",
+    "refreshed": "Refreshed",
+    "refPrice": "Reference price",
+    "vsMsp": "vs MSP",
+    "selectPrompt": "Select a commodity to begin.",
+    "intelligenceLabel": "Seasonal commodity intelligence"
+  },
+  "alerts": {
+    "title": "Market Alerts",
+    "noAlerts": "No active alerts",
+    "noAlertsDetail": "All tracked commodities sit above or near MSP in the current window.",
+    "commoditySignals": "Commodity-specific signals",
+    "commoditySignalsDetail": "These alerts are filtered to the selected commodity only.",
+    "pressurePoints": "Commodity pressure points",
+    "pressureDetail": "Signals are grouped by price pressure, momentum, and coverage risk."
+  },
+  "insights": {
+    "latestSeason": "Latest Season",
+    "msp": "MSP",
+    "currentPrice": "Current Price",
+    "priceTrend": "Price Trend",
+    "expectedRange": "Expected Price Range",
+    "floor": "Floor",
+    "ceiling": "Ceiling",
+    "basis": "Basis",
+    "sellNowPct": "Sell now %",
+    "holdPct": "Hold %"
+  },
+  "profit": {
+    "title": "Profit Estimate",
+    "subtitle": "Enter your harvest quantity to estimate returns at MSP, current price, and the expected ceiling.",
+    "quantity": "Quantity (quintals)",
+    "inputCost": "Input cost / quintal (Rs.) \u2014 optional",
+    "calculate": "Calculate",
+    "atMsp": "Profit at MSP",
+    "atCurrent": "Profit at current price",
+    "atCeiling": "Profit at price ceiling",
+    "stagingAdvice": "Staging advice",
+    "na": "N/A"
+  },
+  "dashboard": {
+    "loading": "Loading commodity intelligence…",
+    "loadError": "Failed to load dashboard data. Please check the backend is running.",
+    "loadingCommodity": "Loading {commodity}…",
+    "spotlight": "Spotlight recommendation",
+    "referencePrice": "Reference price",
+    "mspFloor": "MSP floor",
+    "trend": "Trend",
+    "coverage": "Coverage",
+    "pressurePointsTitle": "Commodity pressure points",
+    "pressurePointsDesc": "Signals are grouped by price pressure, momentum, and coverage risk.",
+    "routesKicker": "Commodity routes",
+    "routesTitle": "Open a dedicated commodity detail page."
+  },
+  "mspComparison": {
+    "mspFloor": "MSP floor",
+    "referencePrice": "Reference price",
+    "rabiBasis": "Rabi basis",
+    "kharifBasis": "Kharif basis",
+    "deviation": "Deviation",
+    "aboveMsp": "above MSP",
+    "belowMsp": "below MSP",
+    "atMsp": "at MSP",
+    "gauge": "Gauge"
+  },
+  "charts": {
+    "priceView": "Season price view",
+    "priceTrajectoryTitle": "Price trajectory across seasons",
+    "priceTrajectoryDesc": "MSP, Kharif, and Rabi reference prices charted together so the spread is visible at a glance.",
+    "noPriceData": "No priced seasons available for this commodity.",
+    "msp": "MSP",
+    "kharifPrice": "Kharif price",
+    "rabiPrice": "Rabi price",
+    "arrivalView": "Season arrival view",
+    "arrivalTitle": "Kharif and Rabi arrivals",
+    "arrivalDesc": "Arrival volume per season, scaled against the peak observed value.",
+    "kharifArrival": "Kharif arrival",
+    "rabiArrival": "Rabi arrival"
+  },
+  "pulse": {
+    "pulseLabel": "Market pulse",
+    "deviationsTitle": "Largest MSP deviations",
+    "deviationsDesc": "Commodities ranked by how far their latest reference price sits from MSP."
+  },
+  "seasonalComparison": {
+    "label": "Seasonal comparison",
+    "title": "Kharif vs Rabi mix",
+    "desc": "Coverage split and arrival intensity across observed seasons."
+  },
+  "summaryTable": {
+    "label": "Detailed view",
+    "title": "Season-by-season breakdown",
+    "desc": "Exact values across MSP, price, and arrivals for every observed season.",
+    "season": "Season",
+    "msp": "MSP",
+    "kharifPrice": "Kharif price",
+    "kharifArrival": "Kharif arrival",
+    "rabiPrice": "Rabi price",
+    "rabiArrival": "Rabi arrival"
+  }
+}

@@ -37,6 +37,14 @@ export type CommodityInsightSummary = {
   recommendationLabel: RecommendationLabel;
   confidenceLabel: string;
   recommendationRationale: string;
+  // Extended intelligence fields — optional; populated by /api/recommendation
+  deltaPctHistory?: number[];
+  expectedPriceRange?: { floor: number; ceiling: number; basis: string };
+  recommendedChannel?: string;
+  sellPctNow?: number;
+  holdPct?: number;
+  actionableTiming?: string;
+  conflictScore?: "LOW" | "MEDIUM" | "HIGH";
 };
 
 export type AlertItem = {
@@ -233,7 +241,7 @@ function recommendFor(
   if (risk === "Low" && trend === "up") {
     return {
       label: "Lean sell",
-      confidence: "Higher confidence",
+      confidence: "High confidence",
       rationale:
         "Price is above MSP and momentum is positive. A measured sell posture is reasonable.",
     };

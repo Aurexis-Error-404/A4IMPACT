@@ -12,6 +12,8 @@ import { SeasonalComparisonPanel } from "../../../components/SeasonalComparisonP
 import { CommoditySummaryTable } from "../../../components/CommoditySummaryTable";
 import { TopNav } from "../../../components/TopNav";
 import { CommodityDetailNav } from "../../../components/CommodityDetailNav";
+import { ProfitEstimatePanel } from "../../../components/ProfitEstimatePanel";
+import { PriceRangeBand } from "../../../components/PriceRangeBand";
 import {
   fetchAllCommodityPairs,
   fetchCommodityInsights,
@@ -74,6 +76,15 @@ export default async function CommodityDetailPage({ params }: { params: Params }
           {/* AI recommendation loads independently with a spinner */}
           <AIRecommendationSection commodity={commodity} basicInsights={insights} />
           <RiskPanel insights={insights} />
+          {insights.expectedPriceRange && (
+            <PriceRangeBand
+              floor={insights.expectedPriceRange.floor}
+              ceiling={insights.expectedPriceRange.ceiling}
+              current={insights.latestReferencePrice}
+              basis={insights.expectedPriceRange.basis}
+            />
+          )}
+          <ProfitEstimatePanel commodity={commodity} />
         </div>
       </section>
 

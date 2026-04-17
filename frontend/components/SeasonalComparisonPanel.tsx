@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import {
   CommodityInsightSummary,
   SeasonPriceRecord,
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export function SeasonalComparisonPanel({ records, insights }: Props) {
+  const t = useTranslations("seasonalComparison");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -31,11 +33,9 @@ export function SeasonalComparisonPanel({ records, insights }: Props) {
 
   return (
     <article className="card feature">
-      <span className="card-label">Seasonal comparison</span>
-      <h3>Kharif vs Rabi mix</h3>
-      <p className="card-copy">
-        Coverage split and arrival intensity across observed seasons.
-      </p>
+      <span className="card-label">{t("label")}</span>
+      <h3>{t("title")}</h3>
+      <p className="card-copy">{t("desc")}</p>
       <SeasonSplitBar
         kharifShare={insights.kharifShare}
         rabiShare={insights.rabiShare}

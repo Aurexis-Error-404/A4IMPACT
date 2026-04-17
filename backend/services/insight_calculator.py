@@ -5,6 +5,7 @@ from data.models import (
     RiskLevel,
     TrendDirection,
     RecommendationLabel,
+    PriceRange,
 )
 
 
@@ -78,8 +79,64 @@ def get_lowest_season(records: list[dict]) -> tuple[str, float | None]:
     return worst["season_year"], _ref_price(worst)
 
 
-def get_risk_level(delta_pct: float, availability: SeasonAvailability) -> RiskLevel:
+def get_delta_pct_history(records: list[dict]) -> list[float]:
+    result = []
+    for r in records:
+        price = _ref_price(r)
+        msp = r.get("msp")
+        if price is not None and msp and msp > 0:
+            result.append(round((price - msp) / msp, 4))
+        else:
+            result.append(0.0)
+    return result
+
+
+def get_expected_price_range(records: list[dict]) -> PriceRange | None:
+    priced = _priced(records)
+    if not priced:
+        return None
+    prices = [_ref_price(r) for r in priced]  # all non-None by construction
+    msps = [r.get("msp") for r in priced if r.get("msp")]
+    raw_floor = min(prices)  # type: ignore[type-var]
+    ceiling = max(prices)    # type: ignore[type-var]
+    # Effective floor = observed minimum but never below the lowest MSP
+    msp_floor = min(msps) if msps else None
+    effective_floor = max(raw_floor, msp_floor) if msp_floor else raw_floor
+    return PriceRange(
+        floor=round(effective_floor, 2),
+        ceiling=round(ceiling, 2),
+        basis=f"{len(priced)}-season observed range",
+    )
+
+
+def get_recommended_channel(
+    delta_pct: float, availability: SeasonAvailability, data_confidence: str = "High"
+) -> str:
+    if availability == "Sparse" or data_confidence == "Low":
+        return "Verify with local APMC first — data confidence is low"
+    if delta_pct < -0.05:
+        return "Government Procurement (FCI/NAFED) — price below MSP, MSP protection applies"
+    if delta_pct > 0.10:
+        return "Open Market (APMC) — price well above MSP, competitive rates favourable"
+    return "Either (APMC or FCI) — price near MSP, compare local rates before selling"
+
+
+def get_risk_level(
+    delta_pct: float, availability: SeasonAvailability, records: list[dict]
+) -> RiskLevel:
     if availability == "Sparse":
+        return "High"
+    # Consecutive below-MSP streak from the most recent season backward
+    streak = 0
+    for r in reversed(records):
+        p, m = _ref_price(r), r.get("msp")
+        if p is None or not m:
+            break
+        if p < m:
+            streak += 1
+        else:
+            break
+    if streak >= 2:
         return "High"
     if delta_pct < -0.15:
         return "High"
@@ -91,35 +148,43 @@ def get_risk_level(delta_pct: float, availability: SeasonAvailability) -> RiskLe
 def get_recommendation(
     risk: RiskLevel,
     trend: TrendDirection,
+    delta: float = 0.0,
+    msp: float | None = None,
 ) -> tuple[RecommendationLabel, str]:
+    gap_str = (
+        f"Rs.{abs(delta):,.0f} {'above' if delta > 0 else 'below'} MSP"
+        if msp else "near MSP"
+    )
     if risk == "High" and trend == "down":
         return (
             "Protect",
-            "Price is significantly below MSP and declining. "
-            "Consider government procurement channels or minimum-loss exit.",
+            f"Price is {gap_str} and still falling. "
+            "Government procurement (FCI/NAFED) is the safest exit — "
+            "MSP protection applies and avoids further market losses.",
         )
     if risk == "High":
         return (
             "Defer",
-            "Price is well below MSP. Defer sale if storage allows; "
-            "monitor for recovery before committing.",
+            f"Price is {gap_str}, well below MSP. "
+            "Defer sale if storage allows — monitor weekly for recovery. "
+            "Trigger exit if storage cost exceeds Rs.50/quintal/month.",
         )
     if risk == "Watch" and trend == "down":
         return (
             "Lean sell",
-            "Price is below MSP and trending downward. "
-            "Selling now may limit further losses.",
+            f"Price is {gap_str} and trending down. "
+            "Partial liquidation now caps downside — sell 50–60% and hold the rest.",
         )
     if risk == "Low" and trend == "up":
         return (
             "Hold",
-            "Price is above MSP and rising. "
-            "Holding may yield better returns this season.",
+            f"Price is {gap_str} and rising. "
+            "Hold for 2–3 more weeks; watch for harvest pressure that could reverse the trend.",
         )
     return (
         "Hold",
-        "Price is near or above MSP with no strong directional signal. "
-        "Standard sell timeline applies.",
+        f"Price is {gap_str} with no strong directional signal. "
+        "No urgency — sell on your normal mandi cycle.",
     )
 
 
@@ -157,12 +222,20 @@ def compute_insights(group: str, commodity: str, records: list[dict]) -> dict:
     lowest_season, _ = get_lowest_season(records)
     availability = get_season_availability(records)
     kharif_share, rabi_share = get_kharif_rabi_shares(records)
-    risk = get_risk_level(delta_pct, availability)
-    rec_label, rationale = get_recommendation(risk, trend)
+    risk = get_risk_level(delta_pct, availability, records)
+    rec_label, rationale = get_recommendation(risk, trend, delta, latest_msp)
 
     highest_label = (
         f"Rs.{highest_price:,.0f} in {highest_season}" if highest_price else ""
     )
+
+    # Sparse data → always Low confidence regardless of other signals
+    priced_count = len([r for r in records if _ref_price(r) is not None])
+    confidence: str = "Low confidence" if priced_count < 3 else "Moderate confidence"
+
+    delta_pct_history = get_delta_pct_history(records)
+    expected_price_range = get_expected_price_range(records)
+    recommended_channel = get_recommended_channel(delta_pct, availability, confidence)
 
     return {
         "commodity": commodity,
@@ -182,6 +255,9 @@ def compute_insights(group: str, commodity: str, records: list[dict]) -> dict:
         "rabiShare": rabi_share,
         "riskLevel": risk,
         "recommendationLabel": rec_label,
-        "confidenceLabel": "Moderate confidence",
+        "confidenceLabel": confidence,
         "recommendationRationale": rationale,
+        "deltaPctHistory": delta_pct_history,
+        "expectedPriceRange": expected_price_range,
+        "recommendedChannel": recommended_channel,
     }

@@ -2,18 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useMemo } from "react";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 type Props = {
   activeCommodityLabel?: string;
 };
 
-const LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/dashboard", label: "Dashboard" },
-];
-
 export function TopNav({ activeCommodityLabel }: Props) {
   const pathname = usePathname();
+  const t = useTranslations("nav");
+
+  const links = useMemo(
+    () => [
+      { href: "/", label: t("home") },
+      { href: "/dashboard", label: t("dashboard") },
+    ],
+    [t],
+  );
 
   return (
     <header className="topnav">
@@ -22,7 +29,7 @@ export function TopNav({ activeCommodityLabel }: Props) {
         <span>KrishiCFO</span>
       </Link>
       <nav>
-        {LINKS.map((link) => {
+        {links.map((link) => {
           const isActive =
             pathname === link.href ||
             (link.href === "/dashboard" && pathname.startsWith("/commodity/"));
@@ -39,10 +46,11 @@ export function TopNav({ activeCommodityLabel }: Props) {
       </nav>
       <div className="topnav-meta">
         {activeCommodityLabel ? (
-          <span className="mono">Detail: {activeCommodityLabel}</span>
+          <span className="mono">{t("detail")}: {activeCommodityLabel}</span>
         ) : (
-          <span className="mono">Seasonal commodity mode</span>
+          <span className="mono">{t("seasonalMode")}</span>
         )}
+        <LanguageSwitcher />
       </div>
     </header>
   );

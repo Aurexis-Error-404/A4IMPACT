@@ -1327,3 +1327,138 @@ table {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Language Switcher Component ── */
+.glass-segmented-control {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(14, 19, 14, 0.4);
+  backdrop-filter: blur(8px);
+}
+
+.segmented-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.active-pill-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 33.333%;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--gold), #cf8517);
+  box-shadow: 0 4px 12px rgba(239, 159, 39, 0.25);
+  transition: transform 380ms var(--ease);
+  z-index: 0;
+}
+
+.segment-btn {
+  position: relative;
+  z-index: 1;
+  width: 38px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-body), serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 240ms var(--ease);
+}
+
+.segment-btn:hover {
+  color: var(--ink);
+}
+
+.segment-btn.active {
+  color: #1a140d;
+}
+
+/* ── Price Range Band ── */
+.price-range-band { display: flex; flex-direction: column; gap: 0.5rem; }
+.prb-header { display: flex; justify-content: space-between; align-items: baseline; }
+.prb-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
+.prb-basis { font-size: 0.72rem; color: var(--muted); }
+.prb-track { position: relative; height: 6px; border-radius: 3px; background: var(--line-strong); overflow: visible; }
+.prb-fill { position: absolute; inset: 0; background: linear-gradient(90deg, #c7d69d 0%, #8fbcbb 100%); border-radius: 3px; opacity: 0.5; }
+.prb-marker { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 12px; height: 12px; border-radius: 50%; background: var(--ink); border: 2px solid var(--surface, #0e130e); box-shadow: 0 0 0 1px var(--ink); }
+.prb-labels { display: flex; justify-content: space-between; }
+.prb-end { font-size: 0.72rem; color: var(--muted); font-family: var(--font-mono); }
+
+/* ── Staging Gauge ── */
+.staging-gauge { display: flex; flex-direction: column; gap: 0.5rem; }
+.sg-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; }
+.sg-sell { background: #f1b2b2; transition: width 0.4s ease; }
+.sg-hold { background: #c7d69d; transition: width 0.4s ease; }
+.sg-legend { display: flex; gap: 1rem; font-size: 0.72rem; color: var(--muted); }
+.sg-sell-label, .sg-hold-label { display: flex; align-items: center; gap: 0.3rem; }
+.sg-dot { width: 8px; height: 8px; border-radius: 50%; }
+.sg-dot.sell { background: #f1b2b2; }
+.sg-dot.hold { background: #c7d69d; }
+
+/* ── Delta Sparkline ── */
+.delta-sparkline { display: block; flex-shrink: 0; }
+
+/* ── Channel Badge ── */
+.channel-badge-wrap { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.channel-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
+.channel-badge { font-size: 0.72rem; font-family: var(--font-mono); padding: 0.15rem 0.55rem; border-radius: 3px; border: 1px solid currentColor; }
+.channel-badge.channel-govt { color: #8fbcbb; border-color: #8fbcbb; }
+.channel-badge.channel-market { color: #c7d69d; border-color: #c7d69d; }
+.channel-badge.channel-neutral { color: var(--muted); border-color: var(--line-strong); }
+
+/* ── Profit Estimate Panel ── */
+.profit-panel { display: flex; flex-direction: column; gap: 1rem; }
+.profit-form { display: flex; flex-direction: column; gap: 0.75rem; }
+.profit-field { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.8rem; color: var(--muted); }
+.profit-input { background: var(--glass); border: 1px solid var(--line-strong); border-radius: 4px; padding: 0.5rem 0.75rem; color: var(--ink); font-family: var(--font-mono); font-size: 0.88rem; width: 100%; }
+.profit-input:focus { outline: 1px solid #c7d69d; }
+.profit-btn { align-self: flex-start; background: #c7d69d; color: #1a1a1a; border: none; border-radius: 4px; padding: 0.45rem 1.2rem; font-size: 0.82rem; cursor: pointer; transition: opacity 0.2s; }
+.profit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.profit-btn:hover:not(:disabled) { opacity: 0.85; }
+.profit-results { display: flex; flex-direction: column; gap: 0.6rem; }
+.profit-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; border-radius: 4px; background: var(--glass); }
+.profit-row.pos { border-left: 3px solid #c7d69d; }
+.profit-row.neg { border-left: 3px solid #f1b2b2; }
+.profit-row-label { font-size: 0.78rem; color: var(--muted); }
+.profit-row-value { font-family: var(--font-mono); font-size: 0.88rem; color: var(--ink); }
+.profit-advice { padding: 0.5rem 0.75rem; background: var(--glass); border-radius: 4px; display: flex; flex-direction: column; gap: 0.3rem; }
+.profit-advice-text { font-size: 0.82rem; color: var(--ink); margin: 0; }
+.profit-error { font-size: 0.78rem; color: #f1b2b2; }
+
+/* ── Recommendation Card: Actionable Timing + Conflict Badge ── */
+.rec-timing-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(199, 214, 157, 0.1);
+  border: 1px solid rgba(199, 214, 157, 0.25);
+  border-radius: 4px;
+  margin-top: 0.5rem;
+}
+.rec-timing-icon { font-size: 0.8rem; }
+.rec-timing-text { font-size: 0.8rem; color: #c7d69d; font-family: var(--font-mono); }
+
+.rec-conflict-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  margin-top: 0.4rem;
+}
+.rec-conflict--low { color: #c7d69d; border: 1px solid rgba(199, 214, 157, 0.3); }
+.rec-conflict--medium { color: #e8c96d; border: 1px solid rgba(232, 201, 109, 0.3); }
+.rec-conflict--high { color: #f1b2b2; border: 1px solid rgba(241, 178, 178, 0.3); }

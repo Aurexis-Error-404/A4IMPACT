@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -7,7 +8,9 @@ from groq import RateLimitError
 
 from config import Settings
 from data.loader import load
-from routers import health, commodities, series, insights, recommendation, ws, alerts, demo
+from routers import health, commodities, series, insights, recommendation, ws, alerts, demo, profit, dashboard
+
+logger = logging.getLogger(__name__)
 
 settings = Settings()
 
@@ -20,9 +23,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="KrishiCFO Backend", lifespan=lifespan)
 
+_dev_origins = r"http://localhost:\d+"
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"http://localhost:\d+",
+    allow_origins=[settings.allowed_origin],
+    allow_origin_regex=_dev_origins if settings.allowed_origin == "http://localhost:3000" else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -49,7 +54,8 @@ async def value_error_handler(_request: Request, exc: ValueError):
 
 @app.exception_handler(Exception)
 async def generic_handler(_request: Request, exc: Exception):
-    return JSONResponse(status_code=500, content={"error": "internal_error", "detail": str(exc)})
+    logger.exception("Unhandled error: %s", exc)
+    return JSONResponse(status_code=500, content={"error": "internal_error"})
 
 
 app.include_router(health.router)
@@ -60,3 +66,5 @@ app.include_router(recommendation.router)
 app.include_router(ws.router)
 app.include_router(alerts.router)
 app.include_router(demo.router)
+app.include_router(profit.router)
+app.include_router(dashboard.router)

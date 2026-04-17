@@ -3,13 +3,13 @@
     "allow": [
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:api.github.com)",
-      "Read(//c/Users/Nkroc/OneDrive/Desktop/College/AI4IMPACT/**)",
-      "Read(//c/Users/Nkroc/OneDrive/Desktop/College/**)",
-      "Read(//c/Users/Nkroc/OneDrive/Desktop/College//**)",
-      "Read(//c/Users/Nkroc/**)",
+      "Read(//c/Users/Rama Bolishetty/OneDrive/Desktop/A4_IMPACT/**)",
+      "Read(//c/Users/Rama Bolishetty/OneDrive/Desktop/College/**)",
+      "Read(//c/Users/Rama Bolishetty/OneDrive/Desktop/College//**)",
+      "Read(//c/Users/Rama Bolishetty/**)",
       "Skill(codex:rescue)",
       "Skill(codex:rescue:*)",
-      "Bash(node C:/Users/Nkroc/.claude/plugins/cache/openai-codex/codex/1.0.2/scripts/codex-companion.mjs task '<task> *)"
+      "Bash(node C:/Users/Rama Bolishetty/.claude/plugins/cache/openai-codex/codex/1.0.2/scripts/codex-companion.mjs task '<task> *)"
     ]
   }
 }

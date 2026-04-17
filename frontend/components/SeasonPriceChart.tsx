@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   SeasonPriceRecord,
   buildLinePath,
@@ -12,29 +15,44 @@ type Props = {
 export function SeasonPriceChart({ records }: Props) {
   const width = 760;
   const height = 280;
-  const padding = 28;
+  const padding = 32;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(false);
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, [records]);
 
   const series = [
-    { key: "msp", color: "#0f766e", label: "MSP" },
-    { key: "kharif_price", color: "#bc6c25", label: "Kharif price" },
-    { key: "rabi_price", color: "#4338ca", label: "Rabi price" },
+    { key: "msp", color: "#d4a24c", label: "MSP" },
+    { key: "kharif_price", color: "#8a9a5b", label: "Kharif price" },
+    { key: "rabi_price", color: "#4fa69a", label: "Rabi price" },
   ] as const;
 
-  const allValues = records.flatMap((record) => [
-    record.msp,
-    record.kharif_price,
-    record.rabi_price,
-  ]).filter((value): value is number => value !== null);
+  const allValues = records
+    .flatMap((r) => [r.msp, r.kharif_price, r.rabi_price])
+    .filter((v): v is number => v !== null);
 
-  const min = Math.min(...allValues);
-  const max = Math.max(...allValues);
+  if (allValues.length === 0) {
+    return (
+      <article className="card">
+        <span className="card-label">Season price view</span>
+        <h3>Price trajectory</h3>
+        <p className="card-copy">No priced seasons available for this commodity.</p>
+      </article>
+    );
+  }
+
+  const min = Math.min(...allValues) * 0.92;
+  const max = Math.max(...allValues) * 1.05;
 
   return (
-    <article className="chart-card">
-      <p className="card-label">Season price view</p>
+    <article className="card feature">
+      <span className="card-label">Season price view</span>
       <h3>Price trajectory across seasons</h3>
       <p className="card-copy">
-        MSP, Kharif price, and Rabi price are plotted together so the spread is
+        MSP, Kharif, and Rabi reference prices charted together so the spread is
         visible at a glance.
       </p>
       <div className="legend">
@@ -46,21 +64,39 @@ export function SeasonPriceChart({ records }: Props) {
         ))}
       </div>
       <div className="chart-wrap">
-        <svg viewBox={`0 0 ${width} ${height}`} width="100%" role="img" aria-label="Season price chart">
-          <rect x="0" y="0" width={width} height={height} rx="24" fill="#fff9ef" />
-          {records.map((record, index) => {
-            const x = padding + (index * (width - padding * 2)) / Math.max(records.length - 1, 1);
+        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Season price chart">
+          <defs>
+            <linearGradient id="grid-fade" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stopColor="rgba(236,241,232,0.06)" />
+              <stop offset="1" stopColor="rgba(236,241,232,0.01)" />
+            </linearGradient>
+          </defs>
+          <rect x="0" y="0" width={width} height={height} rx="18" fill="rgba(0,0,0,0.25)" />
+          {[0.25, 0.5, 0.75].map((t) => (
+            <line
+              key={t}
+              x1={padding}
+              x2={width - padding}
+              y1={padding + t * (height - padding * 2)}
+              y2={padding + t * (height - padding * 2)}
+              stroke="rgba(236,241,232,0.06)"
+              strokeDasharray="3 4"
+            />
+          ))}
+          {records.map((r, i) => {
+            const x = padding + (i * (width - padding * 2)) / Math.max(records.length - 1, 1);
             return (
-              <g key={record.season_year}>
-                <line
-                  x1={x}
-                  x2={x}
-                  y1={padding}
-                  y2={height - padding}
-                  stroke="rgba(106, 78, 38, 0.1)"
-                />
-                <text x={x} y={height - 8} textAnchor="middle" fill="#6a5738" fontSize="12">
-                  {record.season_year}
+              <g key={r.season_year}>
+                <text
+                  x={x}
+                  y={height - 10}
+                  textAnchor="middle"
+                  fill="#8a968e"
+                  fontSize="11"
+                  fontFamily="var(--font-mono)"
+                  letterSpacing="0.06em"
+                >
+                  {r.season_year}
                 </text>
               </g>
             );
@@ -73,20 +109,36 @@ export function SeasonPriceChart({ records }: Props) {
               min,
               max,
             });
+            const path = buildLinePath(points);
             return (
               <g key={item.key}>
                 <path
-                  d={buildLinePath(points)}
+                  d={path}
                   fill="none"
                   stroke={item.color}
-                  strokeWidth="3"
+                  strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  pathLength={1}
+                  style={{
+                    strokeDasharray: 1,
+                    strokeDashoffset: mounted ? 0 : 1,
+                    transition: "stroke-dashoffset 900ms cubic-bezier(0.22,1,0.36,1)",
+                  }}
                 />
-                {points.map((point) => (
-                  <g key={`${item.key}-${point.label}`}>
-                    <circle cx={point.x} cy={point.y} r="4.5" fill={item.color} />
-                    <title>{`${item.label} • ${point.label} • ${formatCurrency(point.value)}`}</title>
+                {points.map((p) => (
+                  <g key={`${item.key}-${p.label}`}>
+                    <circle
+                      cx={p.x}
+                      cy={p.y}
+                      r="3.5"
+                      fill={item.color}
+                      style={{
+                        opacity: mounted ? 1 : 0,
+                        transition: "opacity 400ms 300ms var(--ease)",
+                      }}
+                    />
+                    <title>{`${item.label} • ${p.label} • ${formatCurrency(p.value)}`}</title>
                   </g>
                 ))}
               </g>

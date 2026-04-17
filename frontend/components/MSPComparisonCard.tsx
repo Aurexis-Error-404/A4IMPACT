@@ -1,40 +1,53 @@
+"use client";
+
 import { CommodityInsightSummary, formatCurrency } from "../lib/canned-data";
+import { PriceDeviationGauge } from "./PriceDeviationGauge";
 
 type Props = {
   insights: CommodityInsightSummary | null;
 };
 
-export function MSPComparisonCard({ insights }: Props) {
-  if (!insights) {
-    return null;
-  }
+export function MSPComparisonRail({ insights }: Props) {
+  if (!insights) return null;
 
-  const chipClass =
-    insights.latestDelta > 0
-      ? "delta-positive"
-      : insights.latestDelta < 0
-        ? "delta-negative"
-        : "delta-neutral";
+  const deltaClass =
+    insights.latestDelta > 0 ? "pos" : insights.latestDelta < 0 ? "neg" : "neu";
 
   return (
-    <article className="summary-card">
-      <p className="card-label">MSP comparison</p>
-      <h3>{insights.commodity}</h3>
-      <p className="card-copy">
-        The latest available seasonal market price is compared against MSP using
-        whichever seasonal value exists for the most recent season.
-      </p>
-      <div className={`delta-chip ${chipClass}`}>{insights.latestDeltaLabel}</div>
-      <div className="two-column-copy" style={{ marginTop: 18 }}>
-        <div className="mini-stat">
-          <span>Latest reference price</span>
-          <strong>{formatCurrency(insights.latestReferencePrice)}</strong>
-        </div>
-        <div className="mini-stat">
-          <span>Latest MSP</span>
-          <strong>{formatCurrency(insights.latestMsp)}</strong>
-        </div>
+    <div className="grid-rail stagger" id="msp">
+      <div className="kpi">
+        <span className="kpi-label">MSP floor</span>
+        <span className="kpi-value mono">{formatCurrency(insights.latestMsp)}</span>
+        <span className="kpi-sub">{insights.latestSeason}</span>
       </div>
-    </article>
+      <div className="kpi">
+        <span className="kpi-label">Reference price</span>
+        <span className="kpi-value mono">{formatCurrency(insights.latestReferencePrice)}</span>
+        <span className="kpi-sub">
+          {insights.seasonAvailability === "Rabi only" ? "Rabi basis" : "Kharif basis"}
+        </span>
+      </div>
+      <div className="kpi">
+        <span className="kpi-label">Deviation</span>
+        <span
+          className="kpi-value mono"
+          style={{
+            color:
+              deltaClass === "pos"
+                ? "#c7d69d"
+                : deltaClass === "neg"
+                  ? "#f1b2b2"
+                  : "var(--ink)",
+          }}
+        >
+          {(insights.latestDeltaPct * 100).toFixed(1)}%
+        </span>
+        <span className="kpi-sub">{insights.latestDeltaLabel}</span>
+      </div>
+      <div className="kpi">
+        <span className="kpi-label">Gauge</span>
+        <PriceDeviationGauge deltaPct={insights.latestDeltaPct} />
+      </div>
+    </div>
   );
 }

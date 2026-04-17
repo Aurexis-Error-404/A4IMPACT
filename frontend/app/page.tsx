@@ -1,21 +1,97 @@
 import Link from "next/link";
+import { TopNav } from "../components/TopNav";
+import {
+  formatCurrency,
+  getDashboardSummary,
+  getCommodityDetailModel,
+} from "../lib/canned-data";
 
 export default function HomePage() {
+  const summary = getDashboardSummary();
+  const spotlight =
+    summary.spotlight ? getCommodityDetailModel(summary.spotlight.slug) : null;
+
   return (
-    <main className="hero-shell">
-      <section className="hero-panel">
-        <p className="eyebrow">KrishiCFO MVP</p>
-        <h1>Season-wise crop intelligence, grounded in the data we actually have.</h1>
-        <p className="hero-copy">
-          This version focuses on commodity groups, multi-season price movement,
-          MSP comparison, and Kharif/Rabi arrivals across the checked-in crop
-          reports.
-        </p>
-        <div className="hero-actions">
-          <Link className="primary-button" href="/dashboard">
-            Open dashboard
-          </Link>
+    <main className="page-shell home-page">
+      <TopNav />
+      <section className="hero-stage">
+        <div className="hero-copy-block">
+          <span className="section-kicker">KrishiCFO seasonal intelligence</span>
+          <h1 className="page-title">
+            A premium agritech read on price floors, seasonal flow, and crop risk.
+          </h1>
+          <p className="lede">
+            Built around the crop reports you actually have. The experience is
+            route-driven, commodity-led, and designed to feel like a real product
+            rather than one long analytics screen.
+          </p>
+          <div className="action-row">
+            <Link className="primary-button" href="/dashboard">
+              Open dashboard
+            </Link>
+            {summary.spotlight ? (
+              <Link className="secondary-button" href={`/commodity/${summary.spotlight.slug}`}>
+                View spotlight commodity
+              </Link>
+            ) : null}
+          </div>
         </div>
+        <div className="glass-hero-card">
+          <span className="card-label">System snapshot</span>
+          <h2>{spotlight?.commodity ?? "Seasonal commodity mode"}</h2>
+          <p className="card-copy">
+            The current app tracks crop performance across seasons, compares
+            reference prices to MSP, and surfaces risk without pretending we have
+            daily mandi-level data.
+          </p>
+          <div className="metric-grid">
+            <div className="metric-card">
+              <span className="metric-label">Tracked commodities</span>
+              <strong>{summary.totalCommodities}</strong>
+            </div>
+            <div className="metric-card">
+              <span className="metric-label">Commodity groups</span>
+              <strong>{summary.totalGroups}</strong>
+            </div>
+            <div className="metric-card">
+              <span className="metric-label">Spotlight price</span>
+              <strong>{formatCurrency(spotlight?.insights.latestReferencePrice ?? null)}</strong>
+            </div>
+            <div className="metric-card">
+              <span className="metric-label">Risk posture</span>
+              <strong>{spotlight?.insights.riskLevel ?? "Watch"}</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="home-preview-grid">
+        <article className="card feature">
+          <span className="card-label">What changes here</span>
+          <h3>Not just prettier, actually structured.</h3>
+          <p className="card-copy">
+            The new UI is split into real pages: Home, Dashboard, and Commodity
+            Detail. Each screen has a clear job instead of forcing the whole app
+            into a single scroll stack.
+          </p>
+        </article>
+        <article className="card">
+          <span className="card-label">Visual direction</span>
+          <h3>Photo-led, darker, calmer.</h3>
+          <p className="card-copy">
+            Premium field-inspired backgrounds, selective glass, restrained motion,
+            and stronger page hierarchy replace the old flat green-heavy shell.
+          </p>
+        </article>
+        <article className="card">
+          <span className="card-label">Data honesty</span>
+          <h3>Seasonal intelligence, not fake streaming.</h3>
+          <p className="card-copy">
+            Recommendations, alerts, and pulse events are all grounded in the
+            checked-in seasonal commodity dataset and stay explicit about their
+            heuristic nature.
+          </p>
+        </article>
       </section>
     </main>
   );

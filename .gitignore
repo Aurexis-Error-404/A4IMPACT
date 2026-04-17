@@ -27,6 +27,7 @@ frontend/node_modules/
 frontend/.next/
 frontend/out/
 frontend/.vercel/
+frontend/tsconfig.tsbuildinfo
 
 # Python
 __pycache__/
@@ -50,3 +51,9 @@ coverage/
 # Local temporary files
 *.tmp
 *.temp
+
+# Local design/reference folders
+pics/
+
+# TypeScript incremental build files
+*.tsbuildinfo

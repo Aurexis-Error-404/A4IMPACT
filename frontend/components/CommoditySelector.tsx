@@ -10,7 +10,7 @@ export function CommoditySelector({
   onChange,
 }: Props) {
   return (
-    <div className="selector-card">
+    <div className="filter-card">
       <label htmlFor="commodity">Commodity</label>
       <select
         id="commodity"

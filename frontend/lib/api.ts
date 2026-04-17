@@ -1,22 +1,27 @@
 import {
-  getCommodityGroups,
-  getCommoditiesForGroup,
-  getCommodityInsights,
-  getCommoditySeries,
+  getAlerts,
+  getAllCommodityCards,
+  getAllCommoditySlugs,
+  getCommodityDetailModel,
+  getDashboardSummary,
 } from "./canned-data";
 
-export async function fetchCommodityGroups() {
-  return getCommodityGroups();
+export async function fetchDashboardSummary() {
+  return getDashboardSummary();
 }
 
-export async function fetchCommoditiesForGroup(group: string) {
-  return getCommoditiesForGroup(group);
+export async function fetchCommodityCards() {
+  return getAllCommodityCards();
 }
 
-export async function fetchCommoditySeries(group: string, commodity: string) {
-  return getCommoditySeries(group, commodity);
+export async function fetchCommodityDetail(slug: string) {
+  return getCommodityDetailModel(slug);
 }
 
-export async function fetchCommodityInsights(group: string, commodity: string) {
-  return getCommodityInsights(group, commodity);
+export async function fetchCommoditySlugs() {
+  return getAllCommoditySlugs();
+}
+
+export async function fetchAlerts(limit?: number) {
+  return getAlerts(limit);
 }

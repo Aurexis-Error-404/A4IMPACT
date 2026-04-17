@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   CommodityInsightSummary,
   SeasonPriceRecord,
@@ -13,6 +14,13 @@ type Props = {
 };
 
 export function SeasonalComparisonPanel({ records, insights }: Props) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, [records]);
+
   const arrivalValues = records
     .flatMap((record) => [
       record.kharif_arrival_tonnes,
@@ -49,11 +57,11 @@ export function SeasonalComparisonPanel({ records, insights }: Props) {
               <div className="comparison-track">
                 <div
                   className="comparison-fill kharif"
-                  style={{ width: `${kharifWidth}%` }}
+                  style={{ width: mounted ? `${kharifWidth}%` : "0%" }}
                 />
                 <div
                   className="comparison-fill rabi"
-                  style={{ width: `${rabiWidth}%` }}
+                  style={{ width: mounted ? `${rabiWidth}%` : "0%" }}
                 />
               </div>
             </div>

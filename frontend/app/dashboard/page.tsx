@@ -18,6 +18,7 @@ import {
   fetchCommodityInsights,
   fetchCommoditySeries,
   fetchDashboardSummary,
+  fetchAIRecommendation,
 } from "../../lib/api";
 import { formatCurrency } from "../../lib/canned-data";
 import type {
@@ -44,6 +45,8 @@ export default function DashboardPage() {
   const [insights, setInsights] = useState<CommodityInsightSummary | null>(null);
   const [records, setRecords] = useState<SeasonPriceRecord[]>([]);
   const [insightsLoading, setInsightsLoading] = useState(false);
+  const [aiRec, setAiRec] = useState<CommodityInsightSummary | null>(null);
+  const [recLoading, setRecLoading] = useState(false);
 
   useEffect(() => {
     Promise.all([fetchDashboardSummary(), fetchAllCommodityPairs()]).then(
@@ -79,6 +82,8 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!selectedGroup || !selectedCommodity) return;
     setInsightsLoading(true);
+    setRecLoading(true);
+    setAiRec(null);
     Promise.all([
       fetchCommodityInsights(selectedGroup, selectedCommodity),
       fetchCommoditySeries(selectedGroup, selectedCommodity),
@@ -86,8 +91,19 @@ export default function DashboardPage() {
       .then(([ins, rec]) => {
         setInsights(ins);
         setRecords(rec);
+        setInsightsLoading(false); // Unblock core UI immediately
+
+        // Fire parallel background fetch to Groq AI
+        fetchAIRecommendation(selectedCommodity)
+          .then((aiData) => setAiRec(aiData))
+          .catch((err) => console.error("Groq AI Error:", err))
+          .finally(() => setRecLoading(false));
       })
-      .finally(() => setInsightsLoading(false));
+      .catch((err) => {
+        console.error(err);
+        setInsightsLoading(false);
+        setRecLoading(false);
+      });
   }, [selectedGroup, selectedCommodity]);
 
   if (!dash) {
@@ -167,7 +183,7 @@ export default function DashboardPage() {
               <SeasonArrivalChart records={records} />
             </div>
             <div className="side-stack">
-              <RecommendationCard insights={insights} />
+              <RecommendationCard insights={aiRec ?? insights} loading={recLoading} />
               <RiskPanel insights={insights} />
             </div>
           </section>

@@ -78,7 +78,10 @@ export function HeroCanvas({ insights, group, lastUpdated }: Props) {
           </div>
           <div className="stat">
             <span className="big-label">vs MSP</span>
-            <span className="val mono">{insights.latestDeltaLabel}</span>
+            <span className="val mono">
+              {insights.latestDeltaPct > 0 ? "+" : insights.latestDeltaPct < 0 ? "−" : ""}
+              {(Math.abs(insights.latestDeltaPct) * 100).toFixed(1)}%
+            </span>
           </div>
         </div>
       </aside>

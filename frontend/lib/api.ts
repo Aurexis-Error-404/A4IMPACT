@@ -211,7 +211,12 @@ export async function fetchCommoditySeries(group: string, commodity: string): Pr
 }
 
 export async function fetchAIRecommendation(commodity: string): Promise<CommodityInsightSummary> {
-  return post<CommodityInsightSummary>(`/api/recommendation/${encodeURIComponent(commodity)}`);
+  const res = await fetch(`/api/recommendation/${encodeURIComponent(commodity)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" }
+  });
+  if (!res.ok) throw new Error("AI Fetch Failed");
+  return res.json();
 }
 
 export { commoditySlug };

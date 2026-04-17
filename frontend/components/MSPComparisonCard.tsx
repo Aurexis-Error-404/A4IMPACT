@@ -42,7 +42,9 @@ export function MSPComparisonRail({ insights }: Props) {
         >
           {(insights.latestDeltaPct * 100).toFixed(1)}%
         </span>
-        <span className="kpi-sub">{insights.latestDeltaLabel}</span>
+        <span className="kpi-sub">
+          {insights.latestDelta > 0 ? "above MSP" : insights.latestDelta < 0 ? "below MSP" : "at MSP"}
+        </span>
       </div>
       <div className="kpi">
         <span className="kpi-label">Gauge</span>

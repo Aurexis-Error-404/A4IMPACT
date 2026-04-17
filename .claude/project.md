@@ -41,7 +41,7 @@ Next.js 14 (Vercel)
 FastAPI (Railway)
   │
   ├── VOICE PATH (latency-first, single LLM call)
-  │     Groq Whisper STT → Llama 3.1 8B advisory → ElevenLabs TTS
+  │     Local Whisper STT → Llama 3.1 8B advisory → ElevenLabs TTS
   │     Target: < 6s text, < 9s audio
   │
   └── WEB PATH (quality-first, full debate)
@@ -63,7 +63,7 @@ FastAPI (Railway)
 | Debate rebuttal | Llama 3.1 8B Instant | 14,400 | ≤3 |
 | Mediator synthesis | Qwen3-32B | 1,000 | 1 |
 | Telugu response wrapper (voice) | Llama 3.1 8B Instant | 14,400 | 1 |
-| Telugu STT | Whisper Large v3 | 2,000 | 1 |
+| Telugu STT | Local Whisper | Local | 1 |
 | Query translation (Te→En) | Llama 3.1 8B Instant | 14,400 | 1 |
 
 **Queries per day before Qwen3-32B RPD exhaustion: 1,000 (mediator is the bottleneck)**
@@ -112,7 +112,7 @@ krishicfo/
 │   ├── profit/
 │   │   └── calculator.py           # line-item ₹ breakdown (transport, APMC buyer-side, labor, packaging)
 │   ├── voice/
-│   │   ├── stt.py                  # Groq Whisper, language="te"
+│   │   ├── stt.py                  # local Whisper inference, language="te"
 │   │   └── tts.py                  # ElevenLabs TTS (5s timeout) → browser/client-side text fallback
 │   ├── alerts/
 │   │   └── sms.py                  # Twilio Unicode Telugu SMS (verified numbers only)
@@ -315,7 +315,7 @@ def aggregate_verdicts(optimist, pessimist, risk):
 ```
 Browser MediaRecorder → WAV blob
 → POST /voice/query
-→ Groq Whisper Large v3 (language="te") → text_te           [0.7s]
+→ Local Whisper (language="te") → text_te                   [0.7s]
 → Llama 3.1 8B: translate text_te → English intent          [0.4s]
 → Fetch Prophet cache for crop+mandi (Redis, usually hit)    [0.1s]
 → Llama 3.1 8B: single advisory call                        [1.2s]

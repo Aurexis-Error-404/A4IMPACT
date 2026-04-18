@@ -8,7 +8,7 @@ from groq import RateLimitError
 
 from config import Settings
 from data.loader import load
-from routers import health, commodities, series, insights, recommendation, ws, alerts, demo, profit, dashboard
+from routers import health, commodities, series, insights, recommendation, ws, alerts, demo, profit, dashboard, voice
 
 logger = logging.getLogger(__name__)
 
@@ -68,3 +68,4 @@ app.include_router(alerts.router)
 app.include_router(demo.router)
 app.include_router(profit.router)
 app.include_router(dashboard.router)
+app.include_router(voice.router)  # Phase 6 — voice pipeline

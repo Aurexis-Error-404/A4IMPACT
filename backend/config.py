@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     allowed_origin: str = "http://localhost:3000"
     data_path: str = _DEFAULT_DATA_PATH
+    # Phase 6 — voice pipeline
+    elevenlabs_api_key: str = ""
+    elevenlabs_voice_id: str = ""  # Set at elevenlabs.io playground; test Telugu prosody first
 
     model_config = SettingsConfigDict(
         env_file=_ENV_FILE,

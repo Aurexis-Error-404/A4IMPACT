@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 
-const VOICE_API_URL = "/voice/query";
+const VOICE_API_URL = "http://localhost:8000/voice/query";
 const MAX_RECORD_SECONDS = 30;
 
 // Set to true while Member A's backend isn't ready yet
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 type VoiceState = "idle" | "recording" | "processing" | "response";
 

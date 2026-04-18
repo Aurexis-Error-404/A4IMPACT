@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KrishiCFO · Member C · Voice + Pitch · 24h Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300;1,9..144,600&family=Lora:ital,wght@0,400;0,500;1,400&family=Martian+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0e0b;--panel:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);--border-s:rgba(255,255,255,0.14);--ink:#f0ece2;--muted:#9aa293;--gold:#ef9f27;--gold-d:rgba(239,159,39,0.14);--olive:#639922;--olive-d:rgba(99,153,34,0.14);--teal:#1d9e75;--teal-d:rgba(29,158,117,0.14);--red:#e24b4a;--red-d:rgba(226,75,74,0.1);--violet:#7f77dd;--violet-d:rgba(127,119,221,0.12)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Lora',Georgia,serif;font-size:15px;line-height:1.7;max-width:880px;margin:0 auto;padding:64px 44px 100px}
+.badge{font-family:'Martian Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:28px}
+.hero-title{font-family:'Fraunces',serif;font-size:60px;font-weight:600;line-height:1.0;margin-bottom:8px}
+.hero-title em{font-style:italic;color:var(--gold);font-weight:300}
+.hero-sub{font-size:16px;color:var(--muted);max-width:560px;margin-bottom:40px;line-height:1.65;font-style:italic}
+hr.div{border:none;border-top:1px solid var(--border);margin:36px 0}
+.meta-row{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:48px}
+.meta-item{padding:18px 22px;border-right:1px solid var(--border)}
+.meta-item:last-child{border-right:none}
+.meta-item label{font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+.meta-item span{font-family:'Martian Mono',monospace;font-size:12.5px;font-weight:500;color:var(--ink)}
+.sk{font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:14px}
+.kb{border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:28px}
+.kb-head{padding:26px 30px 20px;border-bottom:1px solid var(--border);background:var(--panel)}
+.kb-title{font-family:'Fraunces',serif;font-size:34px;font-weight:600;line-height:1.1;margin-bottom:10px}
+.kb-title em{font-style:italic;color:var(--gold);font-weight:300}
+.kb-desc{color:var(--muted);font-size:14px;line-height:1.65;max-width:580px}
+.proto-list{padding:0 30px 26px}
+.proto-item{border:1px solid var(--border);border-radius:12px;padding:17px 20px;margin-top:12px;background:var(--panel)}
+.proto-label{font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);display:block;margin-bottom:8px}
+.proto-item p{font-size:13.5px;color:var(--muted);line-height:1.65}
+.proto-item p code,.task-body p code{font-family:'Martian Mono',monospace;font-size:11.5px;color:#c8dbb0;background:rgba(200,219,176,.1);padding:1px 5px;border-radius:4px}
+.code-lbl{font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:16px 30px 4px}
+.code-box{background:#060808;border:1px solid var(--border);border-radius:10px;margin:0 30px 0;padding:16px 20px;overflow-x:auto}
+.code-box code{font-family:'Martian Mono',monospace;font-size:11.5px;color:#c8dbb0;white-space:pre;line-height:1.65;display:block}
+.pipe-table{width:100%;border-collapse:collapse}
+.pipe-table tr{border-bottom:1px solid var(--border)}
+.pipe-table tr:last-child{border-bottom:none}
+.pipe-table td{padding:14px 16px;font-size:13.5px;vertical-align:middle}
+.sn{font-family:'Martian Mono',monospace;font-size:11px;color:var(--gold);width:32px;font-weight:500}
+.sname{font-family:'Lora',serif;font-weight:500;width:210px}
+.sdetail{color:var(--muted);font-size:12.5px}
+.stime{font-family:'Martian Mono',monospace;font-size:11px;color:var(--teal);text-align:right;width:68px}
+.hour-block{border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:20px}
+.hour-head{display:flex;align-items:baseline;gap:16px;padding:22px 28px 18px;border-bottom:1px solid var(--border);background:var(--panel)}
+.hour-num{font-family:'Martian Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--muted);min-width:72px;flex-shrink:0}
+.hour-title{font-family:'Fraunces',serif;font-size:24px;font-weight:600;line-height:1.1}
+.hour-sub{font-size:13px;color:var(--muted);font-style:italic;margin-top:2px}
+.hour-body{padding:24px 28px}
+.task{margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--border)}
+.task:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.task-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:8px}
+.tdot{width:8px;height:8px;border-radius:50%;background:var(--gold);margin-top:7px;flex-shrink:0}
+.ttitle{font-family:'Lora',serif;font-weight:500;font-size:15.5px;color:var(--ink);line-height:1.4}
+.task-body{padding-left:20px}
+.task-body p{font-size:13.5px;color:var(--muted);line-height:1.65;margin-bottom:8px}
+.task-body p:last-child{margin-bottom:0}
+.file-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ft{font-family:'Martian Mono',monospace;font-size:10px;padding:4px 10px;border-radius:6px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--muted)}
+.ft.new{border-color:rgba(239,159,39,.3);color:var(--gold);background:var(--gold-d)}
+.dep{font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.08em;padding:5px 10px;border-radius:6px;border:1px solid rgba(239,159,39,.25);background:var(--gold-d);color:var(--gold);margin-top:10px;display:block;width:fit-content}
+.milestone{border:1px solid rgba(99,153,34,.3);border-radius:12px;padding:16px 20px;background:var(--olive-d);margin-top:16px}
+.ms-lbl{font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--olive);display:block;margin-bottom:6px}
+.milestone p{font-family:'Martian Mono',monospace;font-size:11.5px;color:var(--ink);line-height:1.6}
+.warn-block{border:1px solid rgba(226,75,74,.25);border-radius:12px;padding:16px 20px;background:var(--red-d);margin:16px 0}
+.warn-lbl{font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);display:block;margin-bottom:8px}
+.warn-block p{font-size:13px;color:var(--ink);line-height:1.6}
+.scene{border:1px solid var(--border-s);border-radius:12px;padding:20px 22px;margin-bottom:12px;background:var(--panel)}
+.scene-time{font-family:'Martian Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--gold);display:block;margin-bottom:8px}
+.scene-action{font-size:14px;color:var(--ink);line-height:1.6;margin-bottom:8px}
+.scene-note{font-family:'Martian Mono',monospace;font-size:11px;color:var(--muted);line-height:1.5}
+.qa-item{border-left:2px solid var(--gold);padding:14px 0 14px 18px;margin-bottom:14px}
+.qa-q{font-family:'Lora',serif;font-weight:500;font-size:15px;color:var(--ink);margin-bottom:8px}
+.qa-a{font-size:13.5px;color:var(--muted);line-height:1.65}
+.qa-a strong{color:var(--ink)}
+.doc-footer{margin-top:60px;padding-top:24px;border-top:1px solid var(--border);font-family:'Martian Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<p class="badge">KrishiCFO · Member C · Voice Pipeline + Pitch Lead</p>
+<h1 class="hero-title">Make it <em>speak Telugu.</em></h1>
+<p class="hero-sub">Close the voice loop, build the canned fallback, write the demo script, drill the pitch. You're the last line between good work and a winning presentation. The stack changed — read the new architecture first.</p>
+
+<div class="meta-row">
+  <div class="meta-item"><label>Clock</label><span>24 Hours</span></div>
+  <div class="meta-item"><label>STT</label><span>WhisperFlow</span></div>
+  <div class="meta-item"><label>TTS</label><span>ElevenLabs v2</span></div>
+  <div class="meta-item"><label>Targets</label><span>&lt;3s text · &lt;7s audio</span></div>
+</div>
+
+<hr class="div">
+
+<!-- ARCHITECTURE BLOCK -->
+<div class="kb">
+  <div class="kb-head">
+    <span class="sk">Critical Knowledge · Updated Voice Architecture</span>
+    <h2 class="kb-title">Five stages. <em>Under 7 seconds total.</em></h2>
+    <p class="kb-desc">The voice path now uses WhisperFlow for STT and ElevenLabs Multilingual v2 for TTS. The single advisory.py call has been replaced by 3 parallel agents that mirror the dashboard debate. No Bhashini registration. No AI4Bharat download. No 24-hour wait.</p>
+  </div>
+  <div style="padding:0 30px 28px">
+    <table class="pipe-table">
+      <tr><td class="sn">01</td><td class="sname">Browser MediaRecorder</td><td class="sdetail">Captures Telugu audio · encodes WAV blob · POSTs to <code>/voice/query</code> as multipart/form-data. Do NOT set Content-Type manually — browser sets it with boundary.</td><td class="stime">—</td></tr>
+      <tr><td class="sn">02</td><td class="sname">WhisperFlow STT</td><td class="sdetail">OpenAI Whisper API with <code>language="te"</code> · direct Telugu transcription + Llama 8B translation to English for the reasoning pipeline</td><td class="stime">~0.8s</td></tr>
+      <tr><td class="sn">03</td><td class="sname">3× Llama 8B Parallel</td><td class="sdetail">Season-Optimist + Season-Pessimist + Risk Analyst run simultaneously via <code>asyncio.gather()</code>. Each receives the commodity's 4-season data. No stagger — full parallel.</td><td class="stime">~1.4s</td></tr>
+      <tr><td class="sn">04</td><td class="sname">Llama 8B Synthesizer</td><td class="sdetail">Merges 3 verdicts into one Telugu-friendly 2–3 sentence advisory. This is what gets spoken — keep it concrete: mention the commodity name, the MSP gap, and a single clear action.</td><td class="stime">~0.7s</td></tr>
+      <tr><td class="sn">05</td><td class="sname">ElevenLabs Multilingual v2</td><td class="sdetail">Telugu text → audio bytes → base64. 5s timeout. If timeout → frontend plays text-only. Test voice_id for Telugu prosody at Hour 0 — not all voices handle Telugu equally.</td><td class="stime">~0.9s</td></tr>
+      <tr><td class="sn" style="border:none">Σ</td><td class="sname" style="border:none">Total</td><td class="sdetail" style="border:none;color:var(--ink)">Text response arrives first (~3s). Audio plays when ready (~7s). Always display text while audio loads.</td><td class="stime" style="border:none;color:var(--gold)">~3.8s</td></tr>
+    </table>
+  </div>
+  <div class="proto-list" style="padding-top:0">
+    <div class="proto-item">
+      <span class="proto-label">Why ElevenLabs over Bhashini</span>
+      <p>Bhashini's 24-hour registration approval is structurally incompatible with a 24-hour hackathon — you could burn 12 hours waiting. AI4Bharat requires a ~300MB model download and local inference setup. ElevenLabs works immediately with an API key, has a free 10,000 char/month tier, and Multilingual v2 produces natural-sounding Telugu output. The only tradeoff: ElevenLabs is cloud-only, so test latency at Hour 0.</p>
+    </div>
+    <div class="proto-item">
+      <span class="proto-label">Why 3 parallel agents instead of single advisory call</span>
+      <p>The single <code>advisory.py</code> call made voice feel architecturally separate from the dashboard. With 3 parallel agents, the voice path mirrors the dashboard debate — the same Season-Optimist, Season-Pessimist, and Risk Analyst that power the WebSocket stream also power the voice response. This makes the architecture story stronger in the pitch: "the same AI debate that drives the dashboard also answers your voice query."</p>
+    </div>
+    <div class="proto-item">
+      <span class="proto-label">Base64 audio playback in VoiceButton.tsx</span>
+      <p>Backend returns <code>audio_base64</code> as a base64-encoded MP3 string. To play it: <code>const audio = new Audio('data:audio/mp3;base64,' + audioBase64); audio.play();</code> Display the <code>text_response_te</code> field immediately — do not wait for audio. If <code>audio_base64</code> is null, show text with a small note: "Audio unavailable — Telugu response displayed above."</p>
+    </div>
+  </div>
+</div>
+
+<!-- ELEVENLABS INSURANCE -->
+<div class="kb">
+  <div class="kb-head">
+    <span class="sk">Critical Knowledge · Hour 0 Insurance</span>
+    <h2 class="kb-title">Pre-generate 3 audio clips <em>before anything else.</em></h2>
+    <p class="kb-desc">Even with ElevenLabs, you need pre-generated fallback audio at Hour 0. Network hiccups during the demo moment are unrecoverable. These clips are your safety net.</p>
+  </div>
+  <div class="proto-list">
+    <div class="proto-item">
+      <span class="proto-label">What to generate at Hour 0 — Job #1</span>
+      <p>Use ElevenLabs directly at Hour 0 (before any backend code exists) to generate 3 Telugu advisory audio clips: one for Cotton/high-MSP-deviation scenario, one for Paddy/moderate scenario, one for Groundnut/risk scenario. Save as <code>fallback/audio_cotton.mp3</code>, <code>fallback/audio_paddy.mp3</code>, <code>fallback/audio_groundnut.mp3</code>. If ElevenLabs API fails during live demo, play these. Judges won't know the difference.</p>
+    </div>
+    <div class="proto-item">
+      <span class="proto-label">ElevenLabs voice selection — test at Hour 0</span>
+      <p>Use the ElevenLabs web playground at elevenlabs.io to test voices with Telugu text input before writing any code. Multilingual v2 supports Telugu but voice quality varies by voice_id. Find a voice with good Telugu prosody in 5 minutes at the playground. Note the voice_id string and lock it into <code>config.py</code>. Do not discover a bad voice choice at Hour 18 during rehearsal.</p>
+    </div>
+  </div>
+</div>
+
+<!-- HOUR 0-2 -->
+<div class="hour-block">
+  <div class="hour-head">
+    <span class="hour-num">HOUR 0–2</span>
+    <div><div class="hour-title">Insurance First. Scaffold Second.</div><div class="hour-sub">Audio clips at Hour 0. VoiceButton scaffold while Member A sets up.</div></div>
+  </div>
+  <div class="hour-body">
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Pre-generate 3 Telugu audio clips via ElevenLabs</div></div>
+      <div class="task-body">
+        <p>This is Hour 0 Job #1. Go to elevenlabs.io before writing a single line of code. Generate clips for: (1) "Cotton ki MSP se upar ki kimat hai — hold karo" style Telugu advisory, (2) Paddy moderate scenario, (3) Groundnut risk scenario. Download MP3s. These are your live demo insurance.</p>
+        <div class="file-tags"><span class="ft new">fallback/audio_cotton.mp3</span><span class="ft new">fallback/audio_paddy.mp3</span><span class="ft new">fallback/audio_groundnut.mp3</span></div>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Scaffold VoiceButton.tsx — UI states only</div></div>
+      <div class="task-body">
+        <p>Four states: <strong>idle</strong> (mic icon, "Ask in Telugu"), <strong>recording</strong> (red pulse, "Listening…"), <strong>processing</strong> (spinner, "Thinking…"), <strong>response</strong> (text displayed + audio autoplays). Use <code>navigator.mediaDevices.getUserMedia()</code> for mic. Encode as WAV. Backend not ready yet — wire to a mock that returns hardcoded data after 2 seconds. Match the existing dark glass design: <code>--bg:#0f120e</code>, <code>--gold:#ef9f27</code>, Martian Mono for labels.</p>
+        <div class="file-tags"><span class="ft new">components/VoiceButton.tsx</span></div>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Verify WhisperFlow access with a test audio file</div></div>
+      <div class="task-body">
+        <p>Use curl to test the Whisper API with a sample Telugu audio file at Hour 0. Confirm <code>language="te"</code> returns legible Telugu transcription. Budget check: OpenAI Whisper charges ~$0.006/minute — well within demo budget. If Whisper API is unavailable or key is missing, Groq Whisper Large v3 is the drop-in fallback (same interface, same <code>language="te"</code> param).</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOUR 2-6 -->
+<div class="hour-block">
+  <div class="hour-head">
+    <span class="hour-num">HOUR 2–6</span>
+    <div><div class="hour-title">VoiceButton Integration</div><div class="hour-sub">Build the full component while Member A builds agents.</div></div>
+  </div>
+  <div class="hour-body">
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Complete VoiceButton.tsx with real MediaRecorder logic</div></div>
+      <div class="task-body">
+        <p>Capture mic audio using <code>MediaRecorder API</code>. On stop, collect blobs, create a <code>Blob</code> with <code>type: 'audio/wav'</code>, build <code>FormData</code> with <code>formData.append('audio', blob, 'recording.wav')</code>. POST to <code>/voice/query</code>. Do NOT set Content-Type header — let browser set it with the multipart boundary. Handle three error states: mic permission denied ("Please allow microphone access"), no-mic device ("Voice not available"), network error (show text response if audio_base64 is null).</p>
+        <div class="file-tags"><span class="ft new">components/VoiceButton.tsx</span></div>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Wire audio playback from base64 response</div></div>
+      <div class="task-body">
+        <p>When <code>audio_base64</code> arrives: <code>const audio = new Audio('data:audio/mp3;base64,' + data.audio_base64); audio.play();</code>. Show the <code>text_response_te</code> text immediately — don't wait for audio. Add a "Replay" button. If a new query starts while audio is playing, call <code>audio.pause(); audio.currentTime = 0;</code> before starting new query.</p>
+        <div class="file-tags"><span class="ft new">components/VoiceButton.tsx</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOUR 6-10 -->
+<div class="hour-block">
+  <div class="hour-head">
+    <span class="hour-num">HOUR 6–10</span>
+    <div><div class="hour-title">Voice Loop End-to-End</div><div class="hour-sub">CLI test first. Then wire to real backend. Ugly but working.</div></div>
+  </div>
+  <div class="hour-body">
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Test full pipeline via CLI before wiring UI</div></div>
+      <div class="task-body">
+        <p>Before connecting the frontend, test each stage in isolation: audio file → Whisper → Telugu text ✓. Telugu text → entity extraction → commodity name ✓. Commodity name → 3 agents → synthesized advisory ✓. Advisory text → ElevenLabs → base64 MP3 ✓. Chain only after each stage passes individually. This prevents spending 3 hours debugging a multi-stage failure.</p>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Wire VoiceButton.tsx to Member A's /voice/query endpoint</div></div>
+      <div class="task-body">
+        <p>Replace the mock with the real endpoint. Send audio as multipart/form-data. Receive <code>{text_response_te, audio_base64, commodity_detected}</code>. Display text immediately. Play audio when ready. Handle gracefully: if <code>audio_base64</code> is null, show text-only with small indicator. If request fails entirely, show "Voice query failed — please try again."</p>
+        <span class="dep">⚡ DEPENDS ON MEMBER A'S /voice/query BEING READY</span>
+      </div>
+    </div>
+    <div class="milestone">
+      <span class="ms-lbl">Hour 10 Milestone — Voice Loop Closes</span>
+      <p>Telugu speech → Telugu text response within 3s. Audio plays within 7s or text-only fallback works. VoiceButton handles all error states without crashing.</p>
+    </div>
+  </div>
+</div>
+
+<!-- HOUR 10-14 -->
+<div class="hour-block">
+  <div class="hour-head">
+    <span class="hour-num">HOUR 10–14</span>
+    <div><div class="hour-title">Integration + Audio UX</div><div class="hour-sub">Voice meets real season data. Polish the moment.</div></div>
+  </div>
+  <div class="hour-body">
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Test with actual Telugu speech</div></div>
+      <div class="task-body">
+        <p>Use a teammate or record yourself. Speak a question like "Pamuk ki kimat kab badhegi?" (Cotton price when will rise?) or "Chawal ke liye MSP kya hai?" (What is MSP for rice?). Verify the response references the correct commodity and season data — if it returns Cotton data for a Paddy query, entity extraction is broken.</p>
+        <span class="dep">⚡ PAIRED TESTING WITH MEMBER A</span>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Begin demo script draft</div></div>
+      <div class="task-body">
+        <p>While waiting for integration fixes, start writing the 3-minute demo script. Structure: Problem (30s) → Solution (30s) → Live Demo: dashboard + agents (80s) → Voice moment (30s) → Impact (10s). The product is now a seasonal commodity intelligence dashboard — not a mandi advisor. Update the opening story accordingly.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOUR 14-18 -->
+<div class="hour-block">
+  <div class="hour-head">
+    <span class="hour-num">HOUR 14–18</span>
+    <div><div class="hour-title">Demo Prep + Rehearsal Begins</div><div class="hour-sub">Finalize script. Build canned fallback. Rehearsal 1.</div></div>
+  </div>
+  <div class="hour-body">
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Finalize demo script + time it</div></div>
+      <div class="task-body">
+        <p>Target: 3 minutes max. Strongest moments to keep: the commodity selector driving all charts simultaneously, the 3 agent cards arriving sequentially via WebSocket, the RecommendationCard updating with a real AI verdict, and the Telugu voice response. Cut anything that doesn't demo cleanly.</p>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Verify canned demo path works</div></div>
+      <div class="task-body">
+        <p>Confirm Member A's <code>/demo/canned/{commodity}</code> works. Test <code>?demo=canned</code> flag in the frontend. Practice switching to it mid-demo if needed: "our offline mode kicks in instantly." The canned path should show full agent verdicts + recommendations for Cotton, Paddy, Groundnut.</p>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Rehearsal 1 — Discovery run (Hour 18)</div></div>
+      <div class="task-body">
+        <p>Run through the entire demo without stopping. Note where it drags. Note where loading times need narration cover. Note which agent card animations feel slow. The voice moment is your crowd-pleaser — make sure it lands. Time the full run.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOUR 18-22 -->
+<div class="hour-block">
+  <div class="hour-head">
+    <span class="hour-num">HOUR 18–22</span>
+    <div><div class="hour-title">Four Full Rehearsals. Minimum.</div><div class="hour-sub">Drill until failure becomes a feature.</div></div>
+  </div>
+  <div class="hour-body">
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Rehearsal 2 — Rewrite run (Hour 19)</div></div>
+      <div class="task-body">
+        <p>Rewrite the script based on Rehearsal 1. Cut anything that didn't land. Reorder if something builds better drama differently. Pay special attention to the transition between agent cards arriving and the RecommendationCard updating — this sequence should feel like watching AI reason in real time.</p>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Rehearsal 3 — Failure mode run (Hour 20)</div></div>
+      <div class="task-body">
+        <p>Deliberately break things: kill the backend mid-demo, disconnect WiFi, trigger a Groq 429. Practice recovering with canned data. Practice saying "our offline mode activates instantly" while switching to <code>?demo=canned</code>. Practice the voice moment failing — play the pre-generated fallback audio smoothly. Every failure becomes a feature.</p>
+      </div>
+    </div>
+    <div class="task">
+      <div class="task-head"><div class="tdot"></div><div class="ttitle">Rehearsal 4 — Final timed run (Hour 21)</div></div>
+      <div class="task-body">
+        <p>Full run, timed, no stops. Must be under 3 minutes. Record this run as video. If something catastrophically fails during the actual demo, you can show the video. Drill Q&A cards cold immediately after the run while you're sharp.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="div">
+
+<!-- DEMO SCRIPT -->
+<div class="kb">
+  <div class="kb-head">
+    <span class="sk">Demo Script Template · 3 Minutes</span>
+    <h2 class="kb-title">The story <em>you tell judges.</em></h2>
+    <p class="kb-desc">This is a starting template. Rewrite after Rehearsal 1 based on what actually lands on screen. The product is now a seasonal commodity intelligence dashboard — update the opening accordingly.</p>
+  </div>
+  <div style="padding:20px 30px 28px">
+    <div class="scene">
+      <span class="scene-time">0:00 — The Problem · Farmer's Story</span>
+      <p class="scene-action">"Ramesh grows cotton in Telangana. Last Kharif season, he sold at market price — ₹200 below the MSP floor. The MSP data was public, in a government PDF, in English. Ramesh speaks Telugu."</p>
+      <p class="scene-note">Specific. Emotional. Not abstract. Name the crop, name the gap, name the language barrier.</p>
+    </div>
+    <div class="scene">
+      <span class="scene-time">0:30 — The Solution · One Sentence</span>
+      <p class="scene-action">"KrishiCFO is a Telugu-speaking commodity intelligence advisor. It tracks MSP floors, reads 4 years of seasonal price data, runs a 3-agent AI debate to stress-test every recommendation, and delivers advice in Telugu voice."</p>
+      <p class="scene-note">One sentence per feature. Do not describe the stack — describe what it does for Ramesh.</p>
+    </div>
+    <div class="scene">
+      <span class="scene-time">0:50 — Live Demo · Dashboard + Agents</span>
+      <p class="scene-action">Select Cotton from the commodity group. Watch the SeasonPriceChart, MSP rail, and RiskPanel update. Trigger the WebSocket debate. Narrate each agent card as it arrives.</p>
+      <p class="scene-note">"The Optimist sees Cotton trading above MSP — hold signal. The Pessimist flags declining Kharif arrivals — risk ahead. The Risk Analyst shows the MSP floor is only 8% away. Now the AI synthesizes… and here's the recommendation."</p>
+    </div>
+    <div class="scene">
+      <span class="scene-time">1:50 — Live Demo · Voice Query</span>
+      <p class="scene-action">Speak Telugu into the mic. Audio response plays back in Telugu.</p>
+      <p class="scene-note">"Let me ask the same question the way Ramesh would…" [speak Telugu query] [audio response plays] "Under 7 seconds. In his language. Powered by the same 3-agent debate."</p>
+    </div>
+    <div class="scene">
+      <span class="scene-time">2:20 — Close · Impact + Differentiator</span>
+      <p class="scene-action">"4 seasons of data. 14 commodities. 3 AI agents. All free-tier APIs. The difference is we made the data speak the farmer's language."</p>
+      <p class="scene-note">Numbers. Specificity. End on the language insight — it's the emotional close.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Q&A PREP -->
+<div class="kb">
+  <div class="kb-head">
+    <span class="sk">Q&amp;A Preparation · Anticipate the Judges</span>
+    <h2 class="kb-title">The questions <em>they will ask.</em></h2>
+  </div>
+  <div style="padding:20px 30px 28px">
+    <div class="qa-item">
+      <div class="qa-q">Your data is seasonal, not daily. How is this actionable for a farmer who needs to decide this week?</div>
+      <div class="qa-a">The seasonal view answers the most important question first: is the current price above or below the MSP floor? That single signal — combined with 4 years of seasonal context — tells you whether this is a historically good or bad time to sell. We deliberately built around the data we actually have rather than pretending to have daily mandi data we don't. <strong>The right insight from real data beats a fake forecast from missing data.</strong></div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">Why do you need 3 AI agents for this? Couldn't one LLM call do it?</div>
+      <div class="qa-a">One LLM call would give you one perspective. The Season-Optimist, Pessimist, and Risk Analyst are adversarially designed — they look at the same data through different lenses. The Optimist looks for price uptrend signals. The Pessimist looks for MSP-proximity risk. The Risk Analyst weights Kharif vs Rabi exposure. The synthesis is only trustworthy because all three disagreements are surfaced as a conflict score. <strong>You can't get that from a single prompt.</strong></div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">How accurate is the recommendation?</div>
+      <div class="qa-a">The recommendation is confidence-labeled, not claimed-accurate. We surface a <strong>High/Moderate/Low confidence</strong> label and a conflict score when agents disagree. We chose not to quote a single accuracy number because the data is seasonal — there's no rolling-origin backtest equivalent. Honest uncertainty framing is more useful to the farmer than false precision.</div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">Why not just use ChatGPT?</div>
+      <div class="qa-a">Three reasons: ChatGPT doesn't have our 4-season MSP-vs-price dataset, doesn't run a structured multi-agent debate with adversarial perspectives, and doesn't deliver the output in Telugu voice. <strong>Also: our entire stack runs on free tiers. Zero rupees.</strong></div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">What happens if WiFi dies?</div>
+      <div class="qa-a">We built a canned-data mode. [Switch to <code>?demo=canned</code>]. Pre-computed full responses for 3 commodities, zero external API calls. The demo keeps running. <strong>Let me show you now.</strong></div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q">Can this scale to more commodities?</div>
+      <div class="qa-a">Yes. The pipeline is commodity-agnostic — add a new season report CSV, run the normalizer, and the system picks it up automatically. The agent prompts are parameterized by commodity name and season data. We deliberately scoped to 14 commodities for the demo, not because of architecture limits.</div>
+    </div>
+  </div>
+  <div style="padding:0 30px 24px">
+    <div class="warn-block" style="margin:0">
+      <span class="warn-lbl">Meta-Strategy for Q&amp;A</span>
+      <p>Every answer ends with something concrete: a number, a specific technical choice, or "let me show you." Never end on an abstract claim. If a judge asks something you didn't build: "We didn't build that in this MVP, but the architecture supports it via [specific extension point]." Never bluff. Never hedge without an alternative.</p>
+    </div>
+  </div>
+</div>
+
+<div class="warn-block">
+  <span class="warn-lbl">⚠ Hour 22–24: Sleep</span>
+  <p>Minimum 2 hours. Shower. Clean clothes. Arrive as three clear-eyed people, not three zombies. Your Hour 21 rehearsal video is your safety net — present fresh knowing the backup exists. More hackathons are lost to exhaustion in Q&A than to technical failure.</p>
+</div>
+
+<p class="doc-footer">KrishiCFO · Member C · Voice + Pitch · 24-Hour Hackathon Roadmap · WhisperFlow + ElevenLabs Build · April 2026</p>
+</body>
+</html>

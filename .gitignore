@@ -60,3 +60,11 @@ A4IMPACT/
 
 # TypeScript incremental build files
 *.tsbuildinfo
+
+# Voice pipeline test outputs
+tts_test_output.mp3
+whisper_test_result.txt
+
+# krishicfo standalone app
+krishicfo/node_modules/
+krishicfo/.next/

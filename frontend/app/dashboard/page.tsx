@@ -18,6 +18,7 @@ import { DeltaHistorySparkline } from "../../components/DeltaHistorySparkline";
 import { TrendArrowBadge } from "../../components/TrendArrowBadge";
 import { DebatePanel } from "../../components/DebatePanel";
 import { QuickProfitCalc } from "../../components/QuickProfitCalc";
+import VoiceButton from "../../components/VoiceButton";
 import { CommodityComparisonPanel } from "../../components/CommodityComparisonPanel";
 import { AlertBanner } from "../../components/AlertBanner";
 import type { DebateAlertEvent } from "../../components/AlertBanner";
@@ -266,6 +267,7 @@ export default function DashboardPage() {
               <RecommendationCard insights={aiRec ?? insights} loading={recLoading} />
               <QuickProfitCalc insights={aiRec ?? insights} />
               <RiskPanel insights={insights} />
+              <VoiceButton />
               {(aiRec ?? insights).expectedPriceRange && (() => {
                 const r = (aiRec ?? insights).expectedPriceRange!;
                 return (

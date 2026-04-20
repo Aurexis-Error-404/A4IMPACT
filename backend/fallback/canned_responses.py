@@ -20,12 +20,13 @@ CANNED: dict[str, dict] = {
         "kharifShare": 1.0,
         "rabiShare": 0.0,
         "riskLevel": "High",
-        "recommendationLabel": "Lean sell",
+        "recommendationLabel": "Defer",
         "confidenceLabel": "Moderate confidence",
         "recommendationRationale": (
             "Cotton prices have been consistently below MSP in recent seasons, "
             "with the latest price Rs.1,009 below MSP (-13.1%). "
-            "The sustained floor proximity and flat trend suggest limited near-term recovery."
+            "Defer sale if storage allows — monitor weekly for recovery. "
+            "Trigger exit if storage cost exceeds Rs.50/quintal/month."
         ),
     },
     "Paddy(Common)": {
@@ -70,12 +71,12 @@ CANNED: dict[str, dict] = {
         "kharifShare": 1.0,
         "rabiShare": 0.0,
         "riskLevel": "High",
-        "recommendationLabel": "Lean sell",
+        "recommendationLabel": "Protect",
         "confidenceLabel": "Low confidence",
         "recommendationRationale": (
             "Groundnut prices are significantly below MSP at -30.2%, a persistent pattern across seasons. "
             "The latest Kharif price of Rs.5,067 is Rs.2,196 below MSP with no clear recovery signal. "
-            "Consider staged selling to limit exposure to further downside."
+            "Government procurement (FCI/NAFED) is the safest exit — MSP protection applies."
         ),
     },
 }

@@ -237,25 +237,28 @@ _FALLBACK_AUDIO_DIR = Path(__file__).parent.parent.parent / "fallback"
 
 _COMMODITY_FALLBACK: dict[str, str] = {
     "Cotton": "audio_cotton.mp3",
-    "Paddy (Common)": "audio_paddy.mp3",
+    "Paddy(Common)": "audio_paddy.mp3",
     "Groundnut": "audio_groundnut.mp3",
 }
 
 
 async def _text_to_speech(text: str, commodity: str | None) -> str | None:
     """
-    Convert text to speech via ElevenLabs Multilingual v2.
+    Convert text to speech via ElevenLabs.
     Returns base64-encoded MP3 string, or None on failure.
-    Falls back to pre-generated MP3 if commodity matches one of the 3 fallbacks.
-    5-second network timeout.
+    Retries once on timeout/rate-limit before falling back to pre-generated MP3.
     """
     if not settings.elevenlabs_api_key or not settings.elevenlabs_voice_id:
         logger.warning("ElevenLabs not configured — returning text-only response")
         return _load_fallback_audio(commodity)
 
     url = _ELEVENLABS_TTS_URL.format(voice_id=settings.elevenlabs_voice_id)
+
+    # Truncate very long text to avoid TTS timeout
+    tts_text = text[:800] if len(text) > 800 else text
+
     payload = {
-        "text": text,
+        "text": tts_text,
         "model_id": "eleven_v3",
         "voice_settings": {
             "stability": 0.5,
@@ -268,14 +271,40 @@ async def _text_to_speech(text: str, commodity: str | None) -> str | None:
         "Accept": "audio/mpeg",
     }
 
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.post(url, json=payload, headers=headers)
-            resp.raise_for_status()
-            return base64.b64encode(resp.content).decode()
-    except Exception as exc:
-        logger.warning("ElevenLabs TTS failed (%s) — attempting fallback audio", exc)
-        return _load_fallback_audio(commodity)
+    # Retry up to 2 times with increasing timeout
+    last_error: str | None = None
+    for attempt in range(2):
+        timeout = 15.0 + (attempt * 10.0)  # 15s first try, 25s second
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                resp = await client.post(url, json=payload, headers=headers)
+
+            if resp.status_code == 200 and len(resp.content) > 0:
+                logger.info("TTS success on attempt %d (%d bytes, %.1fs timeout)",
+                            attempt + 1, len(resp.content), timeout)
+                return base64.b64encode(resp.content).decode()
+
+            # Log exact failure details
+            logger.warning("TTS attempt %d failed: HTTP %d, body=%s",
+                           attempt + 1, resp.status_code, resp.text[:300])
+            last_error = f"HTTP {resp.status_code}"
+
+            if resp.status_code == 429:
+                await asyncio.sleep(2.0)  # Wait before retry on rate limit
+                continue
+            break  # Don't retry on 401/422/other non-transient errors
+
+        except httpx.TimeoutException:
+            logger.warning("TTS attempt %d timed out after %.0fs", attempt + 1, timeout)
+            last_error = f"timeout ({timeout}s)"
+            continue
+        except Exception as exc:
+            logger.warning("TTS attempt %d error: %s", attempt + 1, exc)
+            last_error = str(exc)
+            break
+
+    logger.warning("TTS failed after all attempts (last: %s) — trying fallback", last_error)
+    return _load_fallback_audio(commodity)
 
 
 def _load_fallback_audio(commodity: str | None) -> str | None:
@@ -492,8 +521,8 @@ async def voice_chat(
         logger.exception("Whisper STT failed: %s", exc)
         raise HTTPException(status_code=502, detail="Speech recognition failed.")
 
-    # Use English transcript for LLM (more coherent) but show Telugu to user
-    user_text = transcript_en or transcript_te
+    # Send Telugu transcript to LLM so it stays in Telugu; English was causing English replies
+    user_text = transcript_te or transcript_en
 
     # Build crop context for any commodities mentioned in history or transcript
     store = request.app.state.store
@@ -511,11 +540,11 @@ async def voice_chat(
         logger.exception("Chat LLM failed: %s", exc)
         reply_te = "క్షమించండి, ఇప్పుడు సమాధానం ఇవ్వలేకపోతున్నాను. మళ్ళీ ప్రయత్నించండి."
 
-    # TTS — pass commodity=None so pre-generated fallback audio is never used.
-    # The fallback MP3 has fixed content that won't match this dynamic reply.
+    # TTS — pass detected commodity so fallback audio can load if ElevenLabs fails.
+    # Mismatched fallback audio is better than total silence for the farmer.
     audio_base64: str | None = None
     try:
-        audio_base64 = await _text_to_speech(reply_te, None)
+        audio_base64 = await _text_to_speech(reply_te, commodity)
     except Exception as exc:
         logger.warning("TTS failed: %s", exc)
 

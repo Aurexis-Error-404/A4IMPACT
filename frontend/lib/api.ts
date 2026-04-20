@@ -7,7 +7,19 @@ import type {
   PulseEvent,
   SeasonPriceRecord,
 } from "./canned-data";
-import { slugify } from "./canned-data";
+import {
+  slugify,
+  getDashboardSummary as cannedDashboard,
+  getAllCommodityCards as cannedCards,
+  getAllCommoditySlugs,
+  getCommodityGroups as cannedGroups,
+  getCommoditiesForGroup as cannedCommoditiesForGroup,
+  getCommodityInsights as cannedInsights,
+  getCommoditySeries as cannedSeries,
+  getAlerts as cannedAlerts,
+  getCommodityDetailModel as cannedDetail,
+  getCommodityInsightByName,
+} from "./canned-data";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -105,7 +117,6 @@ function toCard(ins: CommodityInsightSummary): CommodityCardSummary {
   };
 }
 
-
 function toPulseEvents(insights: CommodityInsightSummary[], limit: number): PulseEvent[] {
   return insights
     .filter((ins) => ins.latestReferencePrice !== null && ins.latestMsp !== null)
@@ -113,7 +124,9 @@ function toPulseEvents(insights: CommodityInsightSummary[], limit: number): Puls
       id: `${ins.group}-${ins.commodity}`,
       commodity: ins.commodity,
       group: ins.group,
-      season: ins.latestSeason,
+      season: ins.seasonAvailability === "Kharif only" ? "Kharif"
+               : ins.seasonAvailability === "Rabi only" ? "Rabi"
+               : "Both",
       delta: ins.latestDeltaPct,
       deltaLabel: `${ins.latestDeltaPct >= 0 ? "+" : ""}${(ins.latestDeltaPct * 100).toFixed(1)}%`,
       label:
@@ -129,131 +142,185 @@ function toPulseEvents(insights: CommodityInsightSummary[], limit: number): Puls
 }
 
 export async function fetchDashboardSummary(): Promise<DashboardSummary> {
-  const [insights, allAlerts] = await Promise.all([
-    allInsights(),
-    get<AlertItem[]>("/api/alerts"),
-  ]);
+  try {
+    const [insights, allAlerts] = await Promise.all([
+      allInsights(),
+      get<AlertItem[]>("/api/alerts"),
+    ]);
 
-  const cards = insights
-    .map(toCard)
-    .sort((a, b) => Math.abs(b.latestDeltaPct) - Math.abs(a.latestDeltaPct));
+    const cards = insights
+      .map(toCard)
+      .sort((a, b) => Math.abs(b.latestDeltaPct) - Math.abs(a.latestDeltaPct));
 
-  return {
-    dataMode: "seasonal_commodity",
-    totalCommodities: cards.length,
-    totalGroups: new Set(insights.map((i) => i.group)).size,
-    spotlight: cards[0] ?? null,
-    movers: cards.slice(0, 6),
-    alerts: allAlerts.slice(0, 5),
-    pulseEvents: toPulseEvents(insights, 6),
-    updatedAt: "Season sync active",
-  };
+    return {
+      dataMode: "seasonal_commodity",
+      totalCommodities: cards.length,
+      totalGroups: new Set(insights.map((i) => i.group)).size,
+      spotlight: cards[0] ?? null,
+      movers: cards.slice(0, 6),
+      alerts: allAlerts.slice(0, 5),
+      pulseEvents: toPulseEvents(insights, 6),
+      updatedAt: "Season sync active",
+    };
+  } catch {
+    return { ...cannedDashboard(), dataMode: "canned" };
+  }
 }
 
 export async function fetchCommodityCards(): Promise<CommodityCardSummary[]> {
-  const insights = await allInsights();
-  return insights
-    .map(toCard)
-    .sort((a, b) => Math.abs(b.latestDeltaPct) - Math.abs(a.latestDeltaPct));
+  try {
+    const insights = await allInsights();
+    return insights
+      .map(toCard)
+      .sort((a, b) => Math.abs(b.latestDeltaPct) - Math.abs(a.latestDeltaPct));
+  } catch {
+    return cannedCards();
+  }
 }
 
 export async function fetchCommodityDetail(
   targetSlug: string,
 ): Promise<CommodityDetailModel | null> {
-  const pairs = await allCommodityPairs();
-  const match = pairs.find(
-    ({ group, commodity }) => commoditySlug(group, commodity) === targetSlug,
-  );
-  if (!match) return null;
+  try {
+    const pairs = await allCommodityPairs();
+    const match = pairs.find(
+      ({ group, commodity }) => commoditySlug(group, commodity) === targetSlug,
+    );
+    if (!match) return cannedDetail(targetSlug);
 
-  const { group, commodity } = match;
+    const { group, commodity } = match;
 
-  const [records, aiInsights, allAlerts] = await Promise.all([
-    get<SeasonPriceRecord[]>(
-      `/api/commodity-series?group=${encodeURIComponent(group)}&commodity=${encodeURIComponent(commodity)}`,
-    ),
-    post<CommodityInsightSummary>(`/api/recommendation/${encodeURIComponent(commodity)}`),
-    get<AlertItem[]>("/api/alerts"),
-  ]);
+    const [records, aiInsights, allAlerts] = await Promise.all([
+      get<SeasonPriceRecord[]>(
+        `/api/commodity-series?group=${encodeURIComponent(group)}&commodity=${encodeURIComponent(commodity)}`,
+      ),
+      post<CommodityInsightSummary>(`/api/recommendation/${encodeURIComponent(commodity)}`),
+      get<AlertItem[]>("/api/alerts"),
+    ]);
 
-  const relatedAlerts = allAlerts.filter(
-    (a) => a.group === group && a.commodity === commodity,
-  );
+    const relatedAlerts = allAlerts.filter(
+      (a) => a.group === group && a.commodity === commodity,
+    );
 
-  const relatedPulse: PulseEvent[] = [
-    {
-      id: `${group}-${commodity}`,
+    const relatedPulse: PulseEvent[] = [
+      {
+        id: `${group}-${commodity}`,
+        commodity,
+        group,
+        season: aiInsights.latestSeason,
+        delta: aiInsights.latestDeltaPct,
+        deltaLabel: `${aiInsights.latestDeltaPct >= 0 ? "+" : ""}${(aiInsights.latestDeltaPct * 100).toFixed(1)}%`,
+        label:
+          aiInsights.priceTrend === "up"
+            ? "firming vs MSP"
+            : aiInsights.priceTrend === "down"
+              ? "softening vs MSP"
+              : "steady vs MSP",
+        timeAgo: aiInsights.latestSeason,
+      },
+    ];
+
+    return {
+      slug: targetSlug,
       commodity,
       group,
-      season: aiInsights.latestSeason,
-      delta: aiInsights.latestDeltaPct,
-      deltaLabel: `${aiInsights.latestDeltaPct >= 0 ? "+" : ""}${(aiInsights.latestDeltaPct * 100).toFixed(1)}%`,
-      label:
-        aiInsights.priceTrend === "up"
-          ? "firming vs MSP"
-          : aiInsights.priceTrend === "down"
-            ? "softening vs MSP"
-            : "steady vs MSP",
-      timeAgo: aiInsights.latestSeason,
-    },
-  ];
-
-  return {
-    slug: targetSlug,
-    commodity,
-    group,
-    records,
-    insights: aiInsights,
-    alerts: relatedAlerts,
-    relatedPulse,
-  };
+      records,
+      insights: aiInsights,
+      alerts: relatedAlerts,
+      relatedPulse,
+    };
+  } catch {
+    return cannedDetail(targetSlug);
+  }
 }
 
 export async function fetchCommoditySlugs(): Promise<{ slug: string }[]> {
-  const pairs = await allCommodityPairs();
-  return pairs.map(({ group, commodity }) => ({
-    slug: commoditySlug(group, commodity),
-  }));
+  try {
+    const pairs = await allCommodityPairs();
+    return pairs.map(({ group, commodity }) => ({
+      slug: commoditySlug(group, commodity),
+    }));
+  } catch {
+    return getAllCommoditySlugs();
+  }
 }
 
 export async function fetchAlerts(limit = 6): Promise<AlertItem[]> {
-  const alerts = await get<AlertItem[]>("/api/alerts");
-  return alerts.slice(0, limit);
+  try {
+    const alerts = await get<AlertItem[]>("/api/alerts");
+    return alerts.slice(0, limit);
+  } catch {
+    return cannedAlerts(limit);
+  }
 }
 
-// Granular helpers used by individual pages
 export async function fetchAllCommodityPairs(): Promise<{ group: string; commodity: string; slug: string }[]> {
-  const pairs = await allCommodityPairs();
-  return pairs.map((p) => ({ ...p, slug: commoditySlug(p.group, p.commodity) }));
+  try {
+    const pairs = await allCommodityPairs();
+    return pairs.map((p) => ({ ...p, slug: commoditySlug(p.group, p.commodity) }));
+  } catch {
+    const groups = cannedGroups();
+    return groups.flatMap((g) =>
+      cannedCommoditiesForGroup(g).map((c) => ({
+        group: g,
+        commodity: c,
+        slug: commoditySlug(g, c),
+      })),
+    );
+  }
 }
 
 export async function fetchCommodityGroups(): Promise<string[]> {
-  return get<string[]>("/api/commodity-groups");
+  try {
+    return await get<string[]>("/api/commodity-groups");
+  } catch {
+    return cannedGroups();
+  }
 }
 
 export async function fetchCommoditiesForGroup(group: string): Promise<string[]> {
-  return get<string[]>(`/api/commodities?group=${encodeURIComponent(group)}`);
+  try {
+    return await get<string[]>(`/api/commodities?group=${encodeURIComponent(group)}`);
+  } catch {
+    return cannedCommoditiesForGroup(group);
+  }
 }
 
 export async function fetchCommodityInsights(group: string, commodity: string): Promise<CommodityInsightSummary> {
-  return get<CommodityInsightSummary>(
-    `/api/commodity-insights?group=${encodeURIComponent(group)}&commodity=${encodeURIComponent(commodity)}`,
-  );
+  try {
+    return await get<CommodityInsightSummary>(
+      `/api/commodity-insights?group=${encodeURIComponent(group)}&commodity=${encodeURIComponent(commodity)}`,
+    );
+  } catch {
+    const result = cannedInsights(group, commodity);
+    if (!result) throw new Error(`Commodity not found in canned data: ${commodity}`);
+    return result;
+  }
 }
 
 export async function fetchCommoditySeries(group: string, commodity: string): Promise<SeasonPriceRecord[]> {
-  return get<SeasonPriceRecord[]>(
-    `/api/commodity-series?group=${encodeURIComponent(group)}&commodity=${encodeURIComponent(commodity)}`,
-  );
+  try {
+    return await get<SeasonPriceRecord[]>(
+      `/api/commodity-series?group=${encodeURIComponent(group)}&commodity=${encodeURIComponent(commodity)}`,
+    );
+  } catch {
+    return cannedSeries(group, commodity);
+  }
 }
 
 export async function fetchAIRecommendation(commodity: string): Promise<CommodityInsightSummary> {
-  const res = await fetch(`/api/recommendation/${encodeURIComponent(commodity)}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" }
-  });
-  if (!res.ok) throw new Error("AI Fetch Failed");
-  return res.json();
+  try {
+    const res = await fetch(`/api/recommendation/${encodeURIComponent(commodity)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error(`AI fetch → ${res.status}`);
+    return res.json();
+  } catch {
+    const insight = getCommodityInsightByName(commodity);
+    if (!insight) throw new Error(`Commodity not found: ${commodity}`);
+    return insight;
+  }
 }
 
 export { commoditySlug };

@@ -39,7 +39,7 @@ export function HeroCanvas({ insights, group, lastUpdated }: Props) {
       <div className="hero-content">
         <div>
           <span className="hero-eyebrow">{t("seasonal")} - {group}</span>
-          <h1 className="hero-headline">{insights.commodity}</h1>
+          <h1 className="hero-headline">{insights.commodity.replace(/\//g, "/\u200B")}</h1>
           <p className="hero-sub">{t("tagline")}</p>
           <div className="hero-status">
             <span className={`chip ${riskChip}`}>

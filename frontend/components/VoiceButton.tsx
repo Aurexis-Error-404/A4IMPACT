@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 
-const CHAT_URL = "http://localhost:8000/voice/chat";
+const CHAT_URL = `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/voice/chat`;
 const MAX_RECORD_SECONDS = 60;
 
 type Role = "user" | "assistant";
@@ -11,6 +11,7 @@ interface Message {
   role: Role;
   content: string;        // displayed text (transcript or Telugu reply)
   audio_base64?: string | null;
+  usedFallbackTTS?: boolean;   // true when browser TTS was used instead of ElevenLabs
 }
 
 type RecState = "idle" | "recording" | "processing";
@@ -49,6 +50,16 @@ export default function VoiceButton() {
     const audio = new Audio("data:audio/mp3;base64," + base64);
     audioRef.current = audio;
     audio.play().catch(() => {});
+  }
+
+  /** Browser-native TTS fallback — ensures the farmer always hears a response */
+  function speakFallback(text: string) {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "te-IN";
+    utter.rate = 0.9;
+    window.speechSynthesis.speak(utter);
   }
 
   async function startRecording() {
@@ -90,14 +101,21 @@ export default function VoiceButton() {
         const data = await res.json();
 
         const userMsg: Message = { role: "user", content: data.transcript || "…" };
+        const usedFallback = !data.audio_base64 && !!data.reply_te;
         const assistantMsg: Message = {
           role: "assistant",
           content: data.reply_te,
           audio_base64: data.audio_base64,
+          usedFallbackTTS: usedFallback,
         };
 
         setMessages((prev) => [...prev, userMsg, assistantMsg]);
-        if (data.audio_base64) playAudio(data.audio_base64);
+        if (data.audio_base64) {
+          playAudio(data.audio_base64);
+        } else if (data.reply_te) {
+          // Browser TTS fallback — better than silence
+          speakFallback(data.reply_te);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Request failed.");
       } finally {
@@ -124,7 +142,11 @@ export default function VoiceButton() {
   }
 
   function replayMessage(msg: Message) {
-    if (msg.audio_base64) playAudio(msg.audio_base64);
+    if (msg.audio_base64) {
+      playAudio(msg.audio_base64);
+    } else if (msg.content) {
+      speakFallback(msg.content);
+    }
   }
 
   function clearConversation() {
@@ -158,8 +180,14 @@ export default function VoiceButton() {
           <div key={i} style={msg.role === "user" ? s.bubbleUser : s.bubbleAssistant}>
             <span style={s.roleTag}>{msg.role === "user" ? "మీరు" : "KrishiCFO"}</span>
             <p style={s.bubbleText}>{msg.content}</p>
-            {msg.role === "assistant" && msg.audio_base64 && (
-              <button style={s.replayBtn} onClick={() => replayMessage(msg)}>▶</button>
+            {msg.role === "assistant" && (msg.audio_base64 || msg.usedFallbackTTS) && (
+              <button
+                style={s.replayBtn}
+                onClick={() => replayMessage(msg)}
+                title={msg.usedFallbackTTS ? "Browser voice (ElevenLabs unavailable)" : "Replay"}
+              >
+                {msg.usedFallbackTTS ? "🔊" : "▶"}
+              </button>
             )}
           </div>
         ))}

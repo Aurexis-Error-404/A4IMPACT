@@ -11,7 +11,7 @@ export function CommodityGroupSelector({
 }: Props) {
   return (
     <div className="filter-card">
-      <label htmlFor="commodity-group">Commodity group</label>
+      <label htmlFor="commodity-group">Crop type</label>
       <select
         id="commodity-group"
         value={selectedGroup}

@@ -44,6 +44,20 @@ const AGENT_META: Record<AgentStage, { label: string; color: string; borderColor
 
 const STAGE_ORDER: AgentStage[] = ["optimist", "pessimist", "risk", "mediator"];
 
+const VERDICT_PLAIN: Record<string, string> = {
+  HOLD: "Hold — keep your stock",
+  LEAN_SELL: "Consider selling now",
+  DEFER: "Wait — price may recover",
+  PROTECT: "Do not sell — protect your stock",
+};
+
+const AGENT_ROLE: Record<AgentStage, string> = {
+  optimist: "Looking for upside",
+  pessimist: "Checking for risk",
+  risk: "Assessing danger level",
+  mediator: "Final recommendation",
+};
+
 export function DebatePanel({ commodity, open, onClose, onAlert }: DebatePanelProps) {
   const wsRef = useRef<WebSocket | null>(null);
   const [cards, setCards] = useState<Partial<Record<AgentStage, AgentCard>>>({});
@@ -66,7 +80,7 @@ export function DebatePanel({ commodity, open, onClose, onAlert }: DebatePanelPr
 
     ws.onmessage = (ev) => {
       const msg = JSON.parse(ev.data);
-      const stage: AgentStage | undefined = msg.stage;
+      const stage: string | undefined = msg.stage;
 
       if (stage === "alert") {
         onAlert?.({
@@ -85,9 +99,10 @@ export function DebatePanel({ commodity, open, onClose, onAlert }: DebatePanelPr
 
       if (stage === "error") return;
 
-      if (stage && STAGE_ORDER.includes(stage)) {
-        setCards((prev) => ({ ...prev, [stage]: { stage, ...msg.data } }));
-        setPending((prev) => prev.filter((s) => s !== stage));
+      if (stage && STAGE_ORDER.includes(stage as AgentStage)) {
+        const s = stage as AgentStage;
+        setCards((prev) => ({ ...prev, [s]: { stage: s, ...msg.data } }));
+        setPending((prev) => prev.filter((p) => p !== s));
       }
     };
 
@@ -183,9 +198,14 @@ export function DebatePanel({ commodity, open, onClose, onAlert }: DebatePanelPr
                       animation: isWaiting ? "debatePulse 1.4s ease-in-out infinite" : undefined,
                     }}
                   />
-                  <span style={{ fontSize: "12px", fontWeight: 600, color: card ? meta.color : "var(--muted)" }}>
-                    {meta.label}
-                  </span>
+                  <div>
+                    <span style={{ fontSize: "12px", fontWeight: 600, color: card ? meta.color : "var(--muted)", display: "block" }}>
+                      {meta.label}
+                    </span>
+                    <span style={{ fontSize: "10px", color: "var(--muted)" }}>
+                      {AGENT_ROLE[stage]}
+                    </span>
+                  </div>
                 </div>
 
                 {isWaiting ? (
@@ -228,9 +248,8 @@ export function DebatePanel({ commodity, open, onClose, onAlert }: DebatePanelPr
                             </span>
                           )}
                         </div>
-                        <p style={{ margin: "0 0 8px", lineHeight: 1.5, color: "var(--muted)", fontSize: "12px" }}>
-                          {(card.recommendationRationale ?? "").slice(0, 240)}
-                          {(card.recommendationRationale ?? "").length > 240 ? "…" : ""}
+                        <p style={{ margin: "0 0 8px", lineHeight: 1.5, color: "var(--muted)", fontSize: "12px", whiteSpace: "pre-wrap" }}>
+                          {card.recommendationRationale}
                         </p>
                         {card.actionable_timing && (
                           <div style={{ borderTop: "1px solid var(--border)", paddingTop: "8px", color: "var(--gold)", fontSize: "11px" }}>
@@ -240,22 +259,15 @@ export function DebatePanel({ commodity, open, onClose, onAlert }: DebatePanelPr
                       </>
                     ) : (
                       <>
-                        <div style={{ fontWeight: 700, fontSize: "15px", color: meta.color, marginBottom: "4px" }}>
-                          {card.verdict}
-                          {card.confidence !== undefined && (
-                            <span style={{ marginLeft: "6px", fontSize: "11px", fontWeight: 400, color: "var(--muted)" }}>
-                              {card.confidence}% conf.
-                            </span>
-                          )}
+                        <div style={{ fontWeight: 700, fontSize: "14px", color: meta.color, marginBottom: "2px" }}>
+                          {card.verdict ? (VERDICT_PLAIN[card.verdict] ?? card.verdict) : "—"}
                         </div>
-                        {card.risk_level && (
-                          <div style={{ fontSize: "11px", color: "var(--muted)", marginBottom: "6px" }}>
-                            Risk: {card.risk_level}
-                          </div>
-                        )}
-                        <p style={{ margin: 0, lineHeight: 1.5, color: "var(--muted)", fontSize: "12px" }}>
-                          {(card.reasoning ?? "").slice(0, 200)}
-                          {(card.reasoning ?? "").length > 200 ? "…" : ""}
+                        <div style={{ fontSize: "11px", color: "var(--muted)", marginBottom: "6px" }}>
+                          {card.confidence !== undefined && `${card.confidence}% confidence`}
+                          {card.risk_level && ` · Risk: ${card.risk_level}`}
+                        </div>
+                        <p style={{ margin: 0, lineHeight: 1.5, color: "var(--muted)", fontSize: "12px", whiteSpace: "pre-wrap" }}>
+                          {card.reasoning}
                         </p>
                       </>
                     )}

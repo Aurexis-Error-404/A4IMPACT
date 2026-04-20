@@ -235,7 +235,9 @@ def compute_insights(group: str, commodity: str, records: list[dict]) -> dict:
 
     delta_pct_history = get_delta_pct_history(records)
     expected_price_range = get_expected_price_range(records)
-    recommended_channel = get_recommended_channel(delta_pct, availability, confidence)
+    # Pass "Low" (not the full label) so the channel function's == check works correctly
+    confidence_short = "Low" if confidence == "Low confidence" else "High"
+    recommended_channel = get_recommended_channel(delta_pct, availability, confidence_short)
 
     return {
         "commodity": commodity,

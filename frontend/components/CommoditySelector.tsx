@@ -11,7 +11,7 @@ export function CommoditySelector({
 }: Props) {
   return (
     <div className="filter-card">
-      <label htmlFor="commodity">Commodity</label>
+      <label htmlFor="commodity">Your crop</label>
       <select
         id="commodity"
         value={selectedCommodity}

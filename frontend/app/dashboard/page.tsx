@@ -22,6 +22,7 @@ import VoiceButton from "../../components/VoiceButton";
 import { CommodityComparisonPanel } from "../../components/CommodityComparisonPanel";
 import { AlertBanner } from "../../components/AlertBanner";
 import type { DebateAlertEvent } from "../../components/AlertBanner";
+import { useFavourites } from "../../hooks/useFavourites";
 import {
   fetchAllCommodityPairs,
   fetchCommodityInsights,
@@ -43,6 +44,7 @@ type DashState = {
   movers: CommodityCardSummary[];
   alerts: AlertItem[];
   pulseEvents: PulseEvent[];
+  offline: boolean;
 };
 
 type Pair = { group: string; commodity: string; slug: string };
@@ -63,6 +65,7 @@ export default function DashboardPage() {
   const [liveAlerts, setLiveAlerts] = useState<DebateAlertEvent[]>([]);
   const [comparisonInsights, setComparisonInsights] = useState<Record<string, CommodityInsightSummary>>({});
   const [loadError, setLoadError] = useState(false);
+  const { favourites, toggle: toggleFavourite, isFavourite } = useFavourites();
 
   useEffect(() => {
     Promise.all([fetchDashboardSummary(), fetchAllCommodityPairs(), fetchCommodityCards()])
@@ -73,6 +76,7 @@ export default function DashboardPage() {
           movers: summary.movers,
           alerts: summary.alerts,
           pulseEvents: summary.pulseEvents,
+          offline: summary.dataMode === "canned",
         });
         if (summary.spotlight) {
           setSelectedGroup(summary.spotlight.group);
@@ -172,7 +176,21 @@ export default function DashboardPage() {
 
       <TopNav activeCommodityLabel={insights?.commodity ?? selectedCommodity} />
 
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      {dash.offline && (
+        <div style={{
+          background: "rgba(255,180,0,0.12)",
+          border: "1px solid rgba(255,180,0,0.4)",
+          borderRadius: "8px",
+          padding: "8px 14px",
+          fontSize: "12px",
+          color: "var(--gold, #f0b429)",
+          marginBottom: "4px",
+        }}>
+          Offline mode — showing cached data. Start the backend at localhost:8000 for live AI insights.
+        </div>
+      )}
+
+      <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "10px" }}>
         <CommodityFilterBar
           groups={groups}
           selectedGroup={selectedGroup}
@@ -184,21 +202,30 @@ export default function DashboardPage() {
           commodities={commoditiesInGroup}
           selectedCommodity={selectedCommodity}
           onCommodityChange={setSelectedCommodity}
+          allPairs={allPairs}
+          onCropSelect={(group, commodity) => {
+            setSelectedGroup(group);
+            setSelectedCommodity(commodity);
+          }}
         />
         {selectedCommodity && (
           <button
             onClick={() => setDebateOpen(true)}
             style={{
-              flexShrink: 0,
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
               background: "linear-gradient(135deg, rgba(127,119,221,0.25), rgba(127,119,221,0.12))",
               border: "1px solid rgba(127,119,221,0.5)",
               color: "var(--violet)",
-              borderRadius: "8px",
-              padding: "7px 14px",
-              fontSize: "12px",
+              borderRadius: "10px",
+              padding: "12px 26px",
+              fontSize: "15px",
               fontWeight: 600,
               cursor: "pointer",
               whiteSpace: "nowrap",
+              letterSpacing: "0.02em",
             }}
           >
             ⚡ Live Debate
@@ -227,11 +254,6 @@ export default function DashboardPage() {
               lastUpdated="Season sync active"
             />
             <div className="overview-aside">
-              <div className="metric-card feature-card">
-                <span className="metric-label">{t("spotlight")}</span>
-                <strong>{insights.recommendationLabel}</strong>
-                <p>{insights.recommendationRationale}</p>
-              </div>
               <div className="metric-grid compact">
                 <div className="metric-card">
                   <span className="metric-label">{t("referencePrice")}</span>
@@ -309,6 +331,42 @@ export default function DashboardPage() {
             />
           ) : null}
         </div>
+
+        {favourites.length > 0 && (
+          <div style={{ marginBottom: "20px" }}>
+            <span className="section-kicker" style={{ marginBottom: "8px", display: "block" }}>
+              My crops
+            </span>
+            <div className="commodity-card-grid">
+              {allCards.filter((c) => isFavourite(c.slug)).map((card) => {
+                const riskClass = card.riskLevel === "High" ? "risk-high" : card.riskLevel === "Watch" ? "risk-watch" : "risk-low";
+                return (
+                  <div key={card.slug} style={{ position: "relative" }}>
+                    <button
+                      onClick={() => toggleFavourite(card.slug)}
+                      title="Remove from My Crops"
+                      style={{ position: "absolute", top: "8px", right: "8px", background: "none", border: "none", cursor: "pointer", fontSize: "16px", zIndex: 1, lineHeight: 1 }}
+                    >
+                      ★
+                    </button>
+                    <Link className={`commodity-link-card ${riskClass}`} href={`/commodity/${card.slug}`}>
+                      <span className="micro-label">{card.group}</span>
+                      <h3>{card.commodity}</h3>
+                      <p>{card.recommendationLabel} · {card.seasonAvailability}</p>
+                      <div className="commodity-link-meta">
+                        <span>{card.latestSeason}</span>
+                        <span className={card.latestDeltaPct >= 0 ? "positive" : "negative"}>
+                          {card.latestDeltaPct >= 0 ? "+" : ""}{(card.latestDeltaPct * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="commodity-card-grid">
           {dash.movers.map((card) => {
             const riskClass =
@@ -318,24 +376,37 @@ export default function DashboardPage() {
                   ? "risk-watch"
                   : "risk-low";
             return (
-              <Link
-                className={`commodity-link-card ${riskClass}`}
-                key={card.slug}
-                href={`/commodity/${card.slug}`}
-              >
-                <span className="micro-label">{card.group}</span>
-                <h3>{card.commodity}</h3>
-                <p>
-                  {card.recommendationLabel} · {card.seasonAvailability}
-                </p>
-                <div className="commodity-link-meta">
-                  <span>{card.latestSeason}</span>
-                  <span className={card.latestDeltaPct >= 0 ? "positive" : "negative"}>
-                    {card.latestDeltaPct >= 0 ? "+" : ""}
-                    {(card.latestDeltaPct * 100).toFixed(1)}%
-                  </span>
-                </div>
-              </Link>
+              <div key={card.slug} style={{ position: "relative" }}>
+                <button
+                  onClick={() => toggleFavourite(card.slug)}
+                  title={isFavourite(card.slug) ? "Remove from My Crops" : "Add to My Crops"}
+                  style={{
+                    position: "absolute", top: "8px", right: "8px",
+                    background: "none", border: "none", cursor: "pointer",
+                    fontSize: "16px", zIndex: 1, lineHeight: 1,
+                    color: isFavourite(card.slug) ? "var(--gold, #f0b429)" : "var(--muted)",
+                  }}
+                >
+                  {isFavourite(card.slug) ? "★" : "☆"}
+                </button>
+                <Link
+                  className={`commodity-link-card ${riskClass}`}
+                  href={`/commodity/${card.slug}`}
+                >
+                  <span className="micro-label">{card.group}</span>
+                  <h3>{card.commodity}</h3>
+                  <p>
+                    {card.recommendationLabel} · {card.seasonAvailability}
+                  </p>
+                  <div className="commodity-link-meta">
+                    <span>{card.latestSeason}</span>
+                    <span className={card.latestDeltaPct >= 0 ? "positive" : "negative"}>
+                      {card.latestDeltaPct >= 0 ? "+" : ""}
+                      {(card.latestDeltaPct * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                </Link>
+              </div>
             );
           })}
         </div>

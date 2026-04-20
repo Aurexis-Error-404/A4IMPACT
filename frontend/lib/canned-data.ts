@@ -500,7 +500,9 @@ export function getPulseEvents(limit = 7): PulseEvent[] {
         id: `${group}-${commodity}`,
         commodity,
         group,
-        season: insights.latestSeason,
+        season: insights.seasonAvailability === "Kharif only" ? "Kharif"
+               : insights.seasonAvailability === "Rabi only" ? "Rabi"
+               : "Both",
         delta,
         deltaLabel: `${delta >= 0 ? "+" : ""}${(delta * 100).toFixed(1)}%`,
         label:
@@ -516,6 +518,15 @@ export function getPulseEvents(limit = 7): PulseEvent[] {
 
   events.sort((left, right) => Math.abs(right.delta) - Math.abs(left.delta));
   return events.slice(0, limit);
+}
+
+export function getCommodityInsightByName(commodity: string): CommodityInsightSummary | null {
+  for (const group of getCommodityGroups()) {
+    for (const c of getCommoditiesForGroup(group)) {
+      if (c === commodity) return getCommodityInsights(group, c);
+    }
+  }
+  return null;
 }
 
 export function getDashboardSummary(): DashboardSummary {

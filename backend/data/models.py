@@ -84,7 +84,7 @@ class CommodityInsightSummary(BaseModel):
     sellPctNow: int = 0
     holdPct: int = 100
     actionableTiming: str = ""
-    conflictScore: str = "LOW"
+    conflictScore: Literal["LOW", "MEDIUM", "HIGH"] = "LOW"
 
 
 class CommodityPair(BaseModel):

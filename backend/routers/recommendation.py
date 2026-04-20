@@ -1,6 +1,9 @@
 import asyncio
+import logging
 
 from fastapi import APIRouter, HTTPException, Path, Request
+
+logger = logging.getLogger(__name__)
 
 from agents import mediator, risk_analyst, season_optimist, season_pessimist
 from data.models import CommodityInsightSummary
@@ -128,27 +131,46 @@ async def get_recommendation(
     enriched = enrich(records)
 
     # 3 agents in parallel — 2 s stagger to spread Groq TPM load
+    # Pre-initialize so the outer except block can safely reference them
+    opt, pess, risk = {}, {}, {}
+    ai_ran = False
     try:
+        logger.info("recommendation/%s: spawning 3 Groq agents", comm)
         results = await asyncio.gather(
             season_optimist.analyze(comm, group, records, delay=0,  enriched=enriched),
             season_pessimist.analyze(comm, group, records, delay=2, enriched=enriched),
             risk_analyst.analyze(comm, group, records, delay=4,     enriched=enriched),
             return_exceptions=True,
         )
-        opt  = results[0] if isinstance(results[0], dict) else {}
-        pess = results[1] if isinstance(results[1], dict) else {}
-        risk = results[2] if isinstance(results[2], dict) else {}
+
+        def _unwrap(tag: str, res):
+            if isinstance(res, dict):
+                logger.info("recommendation/%s: %s agent OK (verdict=%s)", comm, tag, res.get("verdict"))
+                return res
+            logger.warning("recommendation/%s: %s agent FAILED — %s", comm, tag, res)
+            return {}
+
+        opt  = _unwrap("optimist",  results[0])
+        pess = _unwrap("pessimist", results[1])
+        risk = _unwrap("risk",      results[2])
 
         if any([opt, pess, risk]):
             try:
+                logger.info("recommendation/%s: calling mediator", comm)
                 med_raw = await mediator.synthesize(comm, opt, pess, risk, base, enriched=enriched)
                 med = _sanitize(med_raw, base)
-            except Exception:
+                ai_ran = True
+                logger.info("recommendation/%s: mediator OK (label=%s, confidence=%s, conflict=%s)",
+                            comm, med.get("recommendationLabel"), med.get("confidenceLabel"), med.get("conflictScore"))
+            except Exception as exc:
+                logger.warning("recommendation/%s: mediator FAILED — %s; falling back to rule-based", comm, exc)
                 med = _aggregate_verdicts(opt, pess, risk)
         else:
+            logger.warning("recommendation/%s: ALL agents failed — using rule-based fallback", comm)
             med = _aggregate_verdicts({}, {}, {})
 
-    except Exception:
+    except Exception as exc:
+        logger.exception("recommendation/%s: unexpected error in agent pipeline — %s", comm, exc)
         med = _aggregate_verdicts({}, {}, {})
 
     # Merge mediator output over deterministic base
@@ -174,5 +196,8 @@ async def get_recommendation(
     result["sellPctNow"] = sell_pct
     result["holdPct"]    = hold_pct
 
-    recommendation_cache.set(commodity, result)
+    if ai_ran:
+        recommendation_cache.set(commodity, result)
+    else:
+        logger.warning("recommendation/%s: result NOT cached (rule-based fallback)", commodity)
     return result

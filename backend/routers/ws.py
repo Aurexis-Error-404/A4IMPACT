@@ -132,7 +132,13 @@ async def debate_stream(websocket: WebSocket) -> None:
             med = _sanitize(med_raw, base)
         except Exception:
             med = _fallback_verdict(opt, pess, risk_res, base)
-        await websocket.send_json({"stage": "mediator", "data": med, "ts": _now()})
+        # DebatePanel reads snake_case keys from the mediator; include both forms
+        med_ws = {
+            **med,
+            "conflict_score":   med.get("conflictScore", "LOW"),
+            "actionable_timing": med.get("actionableTiming", ""),
+        }
+        await websocket.send_json({"stage": "mediator", "data": med_ws, "ts": _now()})
 
         # Compute staging and write full result to cache
         sell_pct, hold_pct = compute_staging(

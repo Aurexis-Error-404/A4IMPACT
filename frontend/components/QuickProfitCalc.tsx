@@ -23,8 +23,8 @@ export function QuickProfitCalc({ insights }: QuickProfitCalcProps) {
     n > 0 ? "var(--teal)" : n < 0 ? "var(--red)" : "var(--muted)";
 
   const rows: { label: string; price: number }[] = [
-    { label: "At current price", price: current },
-    { label: "At MSP floor", price: msp },
+    ...(current !== null ? [{ label: "At current price", price: current }] : []),
+    ...(msp !== null ? [{ label: "At MSP floor", price: msp }] : []),
     ...(ceiling !== null ? [{ label: "At ceiling", price: ceiling }] : []),
   ];
 
@@ -139,7 +139,7 @@ export function QuickProfitCalc({ insights }: QuickProfitCalcProps) {
             })}
           </div>
 
-          {cost > 0 && current < cost && (
+          {cost > 0 && current !== null && current < cost && (
             <p style={{ marginTop: "10px", fontSize: "11px", color: "var(--red)", lineHeight: 1.4 }}>
               ⚠ Current price is below your cost price — selling now results in a loss.
             </p>

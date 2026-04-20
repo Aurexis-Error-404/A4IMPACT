@@ -75,7 +75,7 @@ async def main():
 
     for i, text in enumerate(test_texts, 1):
         info(f"Test {i}/3: {text[:50]}…")
-        url = f"https://api.elevenlabs.io/v1/text-to-speech/{s.elevenlabs_voice_id}"
+        url = f"{s.elevenlabs_api_base}/v1/text-to-speech/{s.elevenlabs_voice_id}"
         payload = {
             "text": text,
             "model_id": "eleven_v3",

@@ -8,6 +8,7 @@ export function useFavourites() {
   const [favourites, setFavourites] = useState<string[]>([]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) setFavourites(JSON.parse(stored));
@@ -19,7 +20,9 @@ export function useFavourites() {
       const next = prev.includes(slug)
         ? prev.filter((s) => s !== slug)
         : [...prev, slug];
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      if (typeof window !== "undefined") {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      }
       return next;
     });
   }, []);

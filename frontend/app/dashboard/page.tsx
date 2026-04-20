@@ -212,10 +212,6 @@ export default function DashboardPage() {
           <button
             onClick={() => setDebateOpen(true)}
             style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%)",
               background: "linear-gradient(135deg, rgba(127,119,221,0.25), rgba(127,119,221,0.12))",
               border: "1px solid rgba(127,119,221,0.5)",
               color: "var(--violet)",
@@ -226,6 +222,7 @@ export default function DashboardPage() {
               cursor: "pointer",
               whiteSpace: "nowrap",
               letterSpacing: "0.02em",
+              flexShrink: 0,
             }}
           >
             ⚡ Live Debate

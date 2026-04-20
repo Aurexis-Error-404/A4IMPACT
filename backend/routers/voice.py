@@ -232,7 +232,8 @@ async def _transcribe_audio(audio_bytes: bytes, filename: str) -> tuple[str, str
 # ---------------------------------------------------------------------------
 # ElevenLabs TTS helper
 # ---------------------------------------------------------------------------
-_ELEVENLABS_TTS_URL = "https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+MAX_TTS_RETRIES = 2
+_ELEVENLABS_TTS_URL = f"{settings.elevenlabs_api_base}/v1/text-to-speech/{{voice_id}}"
 _FALLBACK_AUDIO_DIR = Path(__file__).parent.parent.parent / "fallback"
 
 _COMMODITY_FALLBACK: dict[str, str] = {
@@ -271,9 +272,10 @@ async def _text_to_speech(text: str, commodity: str | None) -> str | None:
         "Accept": "audio/mpeg",
     }
 
-    # Retry up to 2 times with increasing timeout
+    # Retry up to MAX_TTS_RETRIES times with increasing timeout
     last_error: str | None = None
-    for attempt in range(2):
+    resp: httpx.Response | None = None
+    for attempt in range(MAX_TTS_RETRIES):
         timeout = 15.0 + (attempt * 10.0)  # 15s first try, 25s second
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
@@ -289,10 +291,10 @@ async def _text_to_speech(text: str, commodity: str | None) -> str | None:
                            attempt + 1, resp.status_code, resp.text[:300])
             last_error = f"HTTP {resp.status_code}"
 
-            if resp.status_code == 429:
+            if resp.status_code == 429 and attempt < MAX_TTS_RETRIES - 1:
                 await asyncio.sleep(2.0)  # Wait before retry on rate limit
                 continue
-            break  # Don't retry on 401/422/other non-transient errors
+            break  # Don't retry on 401/422/other non-transient errors (or last attempt)
 
         except httpx.TimeoutException:
             logger.warning("TTS attempt %d timed out after %.0fs", attempt + 1, timeout)

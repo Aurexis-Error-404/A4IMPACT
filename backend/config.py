@@ -4,7 +4,7 @@ from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _HERE = Path(__file__).parent  # backend/
-_DEFAULT_DATA_PATH = str(_HERE.parent / "crop_data" / "season_report_summary.json")
+_DEFAULT_DATA_PATH = str(_HERE / "data" / "season_report_summary.json")
 _ENV_FILE = str(_HERE / ".env")
 
 
@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     # Phase 6 — voice pipeline
     elevenlabs_api_key: str = ""
     elevenlabs_voice_id: str = ""  # Set at elevenlabs.io playground; test Telugu prosody first
+    elevenlabs_api_base: str = "https://api.elevenlabs.io"
 
     model_config = SettingsConfigDict(
         env_file=_ENV_FILE,
